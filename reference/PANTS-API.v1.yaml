@@ -1,0 +1,115 @@
+openapi: 3.0.0
+info:
+  title: PANTS-API
+  version: '1.0'
+  description: API for interacting with all components of PANTS
+  contact:
+    name: Austin
+  license:
+    name: MIT
+servers:
+  - url: 'http://localhost:8000/api/v1.0'
+paths:
+  /ingredients:
+    get:
+      summary: Get all ingredients
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response-Meta'
+                  - $ref: '#/components/schemas/Response-Paging'
+                  - type: object
+                    properties:
+                      data:
+                        type:
+                          - string
+                          - array
+                        items:
+                          $ref: '#/components/schemas/Ingredient'
+      operationId: get-ingredients
+      description: Gets a collection of all ingredients on the server
+    post:
+      summary: Create an Ingredient
+      operationId: post-ingredients
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response-Meta'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Ingredient'
+        '400':
+          description: Bad Request - Either the request was malformed or was missing required information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response-Meta'
+      description: Creates an ingredient and automatically assigns it an ID
+components:
+  schemas:
+    Ingredient:
+      title: Ingredient
+      type: object
+      description: 'An component of recipies. Should be a generic descriptor, without specific brand or product information.'
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+        serving:
+          type: number
+    Tag:
+      title: Tag
+      type: object
+      properties:
+        id:
+          type: string
+        verbose_name_plural:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+      description: ''
+    Response-Paging:
+      title: Request-Paging
+      type: object
+      description: A model used to keep paging information so that all endpoints use the same paging format.
+      properties:
+        count_all_results:
+          type: number
+        next:
+          type: string
+        previous:
+          type: string
+        count_page_results:
+          type: number
+    Response-Meta:
+      title: Response-Meta
+      type: object
+      description: Response keys providing information about the state and status of a response.
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+          description: 'A verbose description of the actions the server took, or of the error that caused the action to not take place.'
+  securitySchemes: {}
