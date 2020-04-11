@@ -55,6 +55,94 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response-Meta'
       description: Creates an ingredient and automatically assigns it an ID
+  '/ingredients/{ingredient_id}':
+    parameters:
+      - schema:
+          type: string
+        name: ingredient_id
+        in: path
+        required: true
+    get:
+      summary: Get Ingredient by ID
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response-Meta'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Ingredient'
+              examples: {}
+        '404':
+          description: Not Found - The Ingredient you are attempting to get does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response-Meta'
+      operationId: get-ingredients-ingredient_id
+      description: "Gets a single ingredient based on it's ID number"
+    post:
+      summary: Update Ingredient by ID
+      operationId: post-ingredients-ingredient_id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response-Meta'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Ingredient'
+        '400':
+          description: 'Bad Request - Either your request is missing required keys, or certain values you have requested are invalid.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response-Meta'
+        '404':
+          description: Not Found - The Ingredient you are attempting to update does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response-Meta'
+      description: Updates the specified ingredient with given ID so that a subsequent GET request would return the provided information.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ingredient'
+        description: The ingredient information you wish to overwrite onto the existing ingredient.
+    delete:
+      summary: Delete Ingredient by ID
+      operationId: delete-ingredients-ingredient_id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response-Meta'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Response-Meta'
+                    description: The deleted Ingredient
+        '404':
+          description: Not Found - The specific Ingredient you requested to delete does not exist. Either it was already deleted or it never existed in the first place.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response-Meta'
+      description: Removes an Ingredient from the system. Subsequent requests to GET this Ingredient will return 404 until an Ingredient is created with this same ID again.
 components:
   schemas:
     Ingredient:
