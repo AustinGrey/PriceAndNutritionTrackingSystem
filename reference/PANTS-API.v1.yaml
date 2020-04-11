@@ -13,7 +13,8 @@ paths:
   /ingredients:
     get:
       summary: Get all ingredients
-      tags: []
+      tags:
+        - Ingredients
       responses:
         '200':
           description: OK
@@ -55,6 +56,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response-Meta'
       description: Creates an ingredient and automatically assigns it an ID
+      tags:
+        - Ingredients
   '/ingredients/{ingredient_id}':
     parameters:
       - schema:
@@ -64,7 +67,8 @@ paths:
         required: true
     get:
       summary: Get Ingredient by ID
-      tags: []
+      tags:
+        - Ingredients
       responses:
         '200':
           description: OK
@@ -120,6 +124,8 @@ paths:
             schema:
               $ref: '#/components/schemas/Ingredient'
         description: The ingredient information you wish to overwrite onto the existing ingredient.
+      tags:
+        - Ingredients
     delete:
       summary: Delete Ingredient by ID
       operationId: delete-ingredients-ingredient_id
@@ -143,12 +149,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response-Meta'
       description: Removes an Ingredient from the system. Subsequent requests to GET this Ingredient will return 404 until an Ingredient is created with this same ID again.
+      tags:
+        - Ingredients
 components:
   schemas:
     Ingredient:
       title: Ingredient
       type: object
-      description: 'An component of recipies. Should be a generic descriptor, without specific brand or product information.'
+      description: 'A component of recipies. Should be a generic descriptor, without specific brand or product information.'
       properties:
         id:
           type: string
@@ -164,6 +172,8 @@ components:
             $ref: '#/components/schemas/Tag'
         serving:
           type: number
+      x-tags:
+        - Ingredients
     Tag:
       title: Tag
       type: object
@@ -176,7 +186,9 @@ components:
           type: string
         description:
           type: string
-      description: ''
+      description: A descriptor for helping group together similar Ingredients
+      x-tags:
+        - Ingredients
     Response-Paging:
       title: Request-Paging
       type: object
@@ -190,6 +202,8 @@ components:
           type: string
         count_page_results:
           type: number
+      x-tags:
+        - Responses
     Response-Meta:
       title: Response-Meta
       type: object
@@ -200,4 +214,6 @@ components:
         message:
           type: string
           description: 'A verbose description of the actions the server took, or of the error that caused the action to not take place.'
+      x-tags:
+        - Responses
   securitySchemes: {}
