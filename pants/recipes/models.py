@@ -11,7 +11,7 @@ from django.db import models
 from django.template.defaultfilters import slugify
 from django.utils.functional import cached_property
 
-from ingredients.models import Ingredient
+from ingredients.models import Ingredient, Item
 from ingredients.utils import add_nutrition_ratios
 
 # TODO utils?
@@ -137,6 +137,8 @@ class Recipe(models.Model):
    method = models.TextField(blank=True)
    notes = models.TextField(blank=True)
 
+   items = models.ManyToManyField(Item, through='RecipeItem')
+
    def __str__(self):
       return self.name
 
@@ -216,6 +218,44 @@ class Recipe(models.Model):
          rqset = Recipe.objects.filter(components__of_recipe__in=rqset) # Recurse
 
       return values
+
+
+class RecipeItem(models.Model):
+   """
+   Which items are part of a recipe
+   """
+   recipe = models.ForeignKey(
+      Recipe,
+      on_delete=models.CASCADE,
+   )
+
+   item = models.ForeignKey(
+      Item,
+      on_delete=models.PROTECT,
+      related_name='part_of'
+   )
+
+   amount = models.DecimalField(
+      decimal_places=3,
+      max_digits=7,
+      validators=[not_negative],
+      help_text="Amount, either grams or servings depending on the unit",
+      null=True,
+      blank=True,
+   )
+
+   UNIT_GRAMS = 'g'
+   UNIT_SERVINGS = 'srv'
+   POSSIBLE_UNITS = [
+      (UNIT_GRAMS, 'grams'),
+      (UNIT_SERVINGS, 'servings')
+   ]
+
+   unit = models.CharField(
+      max_length=3,
+      choices=POSSIBLE_UNITS,
+      default=UNIT_GRAMS
+   )
 
 
 class Component(models.Model):

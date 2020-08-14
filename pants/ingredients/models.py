@@ -19,6 +19,90 @@ not_negative = MinValueValidator(0)
 # TODO utility funcs -> new file
 # TODO Include data calcs from recipe etc
 
+class ItemTag(models.Model):
+   """
+   Tags for items - just a name and optional description.
+   Name follows slug rules (only lowercase, hyphens and underscores)
+   e.g. 'stew', 'baked', 'gluten-free', 'no_cook'
+   """
+   verbose_name_plural = "Item Tags"
+
+   name = models.SlugField(
+      max_length=settings.TAG_LENGTH,
+      blank=False,
+      unique=True,
+   )
+
+   description = models.CharField(max_length=settings.DESCR_LENGTH, blank=True)
+
+   def __str__(self):
+      return self.name
+
+
+class Item(models.Model):
+   """
+   An item is something that is used in a recipe (using that for now since component is taken)
+   Children of this class should implement a way to get nutritional information
+   """
+   # A unique, human readable identifier for this component
+   name = models.CharField(
+      max_length=settings.NAME_LENGTH,
+      blank=False,
+      unique=True,
+   )
+
+   # A unique, computer readable identifier for this component
+   slug = models.CharField(
+      max_length=settings.SLUG_LENGTH,
+      blank=True,    # Set automatically; null=False still applies
+      unique=True,
+   )
+
+   # A long form description about what this component is
+   description = models.CharField(max_length=settings.DESCR_LENGTH, blank=True)
+
+   # The user that has the authority to modify/delete this ingredient
+   # Owner is null for "global" Components
+   # Only owner can see/edit their own ones, only admin can edit global ones
+   owner = models.ForeignKey(
+      User,
+      blank=True,
+      null=True,
+      on_delete=models.CASCADE,
+      related_name='+',  # Prevents User-> related name being created
+   )
+
+   # Related tags to this component, for assistance in sorting and searching
+   tags = models.ManyToManyField(ItemTag, blank=True)
+
+   # How many grams of this component makes one serving. Optional
+   serving = models.DecimalField(
+      decimal_places=1,
+      max_digits=4,  # 999.9g grams per serving
+      validators=[not_negative],
+      null=True,
+      blank=True,
+      help_text="Optional grams per serving. WARNING Nutrients are still entered per-KG."
+   )
+
+   # An arbitrarily large text field for storing an introduction to the component (e.g. history, blog posts, etc)
+   introduction = models.TextField(blank=True)
+
+   # An arbitrarily large text field for storing notes about the component (nutrition, common mistakes, etc)
+   notes = models.TextField(blank=True)
+
+   # Bookkeeping properties to help with maintainence
+   created_at = models.DateTimeField(auto_now_add=True)
+   updated_at = models.DateTimeField(auto_now=True)
+
+   def __str__(self):
+      return self.name
+
+   def save(self, *args, **kwargs):
+      if not self.slug:
+         self.slug = slugify(self.name)      # NOTE will Exception on clashes
+      super(Item, self).save(*args, **kwargs)
+
 
 class IngredientTag(models.Model):
    """
@@ -123,7 +207,7 @@ class AbstractBaseNutrients(models.Model):
    updated_at = models.DateTimeField(auto_now=True)
 
 
-class Ingredient(AbstractBaseNutrients):
+class Ingredient(Item, AbstractBaseNutrients):
    """
    A *GENERIC* category of ingredient, like "Rolled Oats"
       - not a specific brand or product
@@ -136,52 +220,6 @@ class Ingredient(AbstractBaseNutrients):
 
    class Meta:
         ordering = ["-updated_at"]
-
-   name = models.CharField(
-      max_length=settings.NAME_LENGTH,
-      blank=False,
-      unique=True,
-   )
-   slug = models.CharField(
-      max_length=settings.SLUG_LENGTH,
-      blank=True,    # Set automatically; null=False still applies
-      unique=True,
-   )
-   description = models.CharField(max_length=settings.DESCR_LENGTH,blank=True)
-
-   # Owner is null for "global" Ingredients
-   # Only owner can see/edit their own ones, only admin can edit global ones
-   owner = models.ForeignKey(
-      User,
-      blank=True,
-      null=True,
-      on_delete=models.CASCADE,
-      related_name='+',       # Prevents User-> related name being created
-   )
-
-   tags = models.ManyToManyField(IngredientTag, blank=True)
-
-   serving = models.DecimalField(
-      decimal_places=1,
-      max_digits=4,     # 999.9g grams per serving
-      validators=[not_negative],
-      null=True,
-      blank=True,
-      help_text="Optional grams per serving. WARNING Nutrients are still entered per-KG."
-   )
-
-   # These are arbitrary large plain text fields shown on detail page.
-   # Page order: Introduction, Nutrition, Notes, Price List
-   introduction = models.TextField(blank=True)
-   notes = models.TextField(blank=True)
-
-   def __str__(self):
-      return self.name
-
-   def save(self, *args, **kwargs):
-      if not self.slug:
-         self.slug = slugify(self.name)      # NOTE will Exception on clashes
-      super(Ingredient, self).save(*args, **kwargs)
 
    @cached_property
    def sorted_prices(self):

@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 
-from .models import Recipe, Component, RecipeTag, RecipeFlag
+from .models import Recipe, Component, RecipeTag, RecipeFlag, RecipeItem
 
 admin.site.register(RecipeTag)
 admin.site.register(RecipeFlag)
@@ -66,3 +66,4 @@ class RecipeAdmin(admin.ModelAdmin):
    inlines = [ComponentInlineAdmin]
 
 admin.site.register(Recipe, RecipeAdmin)
+admin.site.register(RecipeItem)

@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 
-from .models import Ingredient, IngredientTag
+from .models import Ingredient, IngredientTag, Item
 from products.models import Price
 
 class PriceInlineAdmin(admin.TabularInline):
@@ -66,3 +66,4 @@ class IngredientAdmin(admin.ModelAdmin):
 
 admin.site.register(Ingredient,IngredientAdmin)
 admin.site.register(IngredientTag)
+admin.site.register(Item)
