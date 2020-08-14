@@ -4,7 +4,7 @@
     <div id="ingredient-manager">
       <div class="header-all flex-row-between flex-gap-regular">
           <h2>All Ingredients</h2>
-          <float-input id='ingredient_filter' label='Search' extra='onkeyup="all_ingredients.gridOptions.api.refreshInfiniteCache()"'></float-input>
+          <float-input id='ingredient_filter' label='Search' extra='onkeyup="all_ingredients_grid.gridOptions.api.refreshInfiniteCache()"'></float-input>
       </div>
       <div class="ingredients-all">
 
@@ -94,18 +94,39 @@
 {% endblock %}
 {% block js %}
     <script>
-        let all_ingredients = {};
+        // Set up the grid for browsing ingredients
+        let all_ingredients_grid;
+
+        // Make variables for getting the input fields
+        let form_ingredient = document.querySelector('#ingredient_edit_form');
+        let input_ingredient_uri = document.querySelector('#ingredient_uri');
+        let input_name = document.querySelector('#name');
+        let input_description = document.querySelector('#description');
+        let input_owner = document.querySelector('#owner');
+        let input_serving = document.querySelector('#serving');
+        let input_introduction = document.querySelector('#introduction');
+        let input_notes = document.querySelector('#notes');
+        let input_tags = document.querySelector('#tags');
+        let input_slug = document.querySelector('#slug');
+        let input_kilojoules = document.querySelector('#kilojoules');
+        let input_protein = document.querySelector('#protein');
+        let input_fibre = document.querySelector('#fibre');
+        let input_carbohydrate = document.querySelector('#carbohydrate');
+        let input_fat = document.querySelector('#fat');
+        let input_sugar = document.querySelector('#sugar');
+        let input_saturatedfat = document.querySelector('#saturatedfat');
+        let input_sodium = document.querySelector('#sodium');
+
 
         document.addEventListener('DOMContentLoaded', () => {
             // Create a grid to view the data
-            let columns = [
-                {headerName: "Name", field: "name", sort: 'asc'},
-                {headerName: "Description", field: "description"},
-                {headerName: "Serving", field: "serving"},
-                {headerName: "Notes", field: "notes"},
-            ];
-            let grid_options = {
-                columnDefs: columns,
+            all_ingredients_grid = new agGrid.Grid(document.querySelector('#ingredients'), {
+                columnDefs: [
+                    {headerName: "Name", field: "name", sort: 'asc'},
+                    {headerName: "Description", field: "description"},
+                    {headerName: "Serving", field: "serving"},
+                    {headerName: "Notes", field: "notes"},
+                ],
                 defaultColDef: {
                     flex: 1,
                     sortable: true,
@@ -129,33 +150,32 @@
                         }
                     }
                 }
-            };
-            all_ingredients = new agGrid.Grid(document.querySelector('#ingredients'), grid_options);
+            });
 
             // Register event to fill form with selected ingredient
-            all_ingredients.gridOptions.api.addEventListener('rowSelected', args => {
+            all_ingredients_grid.gridOptions.api.addEventListener('rowSelected', args => {
                 // This event fires if a row is selected OR deselected, we only care if something gets selected
                 if (!args.node.selected) return;
                 let ingredient = args.data;
-                document.querySelector('#ingredient_uri').value = ingredient.url;
-                document.querySelector('#name').value = ingredient.name;
-                document.querySelector('#description').value = ingredient.description;
-                document.querySelector('#owner').value = ingredient.owner;
-                document.querySelector('#serving').value = ingredient.serving;
-                document.querySelector('#introduction').value = ingredient.introduction;
-                document.querySelector('#notes').value = ingredient.notes;
-                document.querySelector('#tags').value = ingredient.tags.join(',');
-                document.querySelector('#slug').value = ingredient.slug;
+                input_ingredient_uri.value = ingredient.url;
+                input_name.value = ingredient.name;
+                input_description.value = ingredient.description;
+                input_owner.value = ingredient.owner;
+                input_serving.value = ingredient.serving;
+                input_introduction.value = ingredient.introduction;
+                input_notes.value = ingredient.notes;
+                input_tags.value = ingredient.tags.join(',');
+                input_slug.value = ingredient.slug;
 
                 // Nutritional Data
-                document.querySelector('#kilojoules').value = ingredient.kilojoules;
-                document.querySelector('#protein').value = ingredient.protein;
-                document.querySelector('#fibre').value = ingredient.fibre;
-                document.querySelector('#carbohydrate').value = ingredient.carbohydrate;
-                document.querySelector('#fat').value = ingredient.fat;
-                document.querySelector('#sugar').value = ingredient.sugar;
-                document.querySelector('#saturatedfat').value = ingredient.saturatedfat;
-                document.querySelector('#sodium').value = ingredient.sodium;
+                input_kilojoules.value = ingredient.kilojoules;
+                input_protein.value = ingredient.protein;
+                input_fibre.value = ingredient.fibre;
+                input_carbohydrate.value = ingredient.carbohydrate;
+                input_fat.value = ingredient.fat;
+                input_sugar.value = ingredient.sugar;
+                input_saturatedfat.value = ingredient.saturatedfat;
+                input_sodium.value = ingredient.sodium;
 
                 // Also store a reference to this node so that we can refresh it
                 // @todo change this to pants_data and provide a safe access function
@@ -185,37 +205,31 @@
          * Updates the ingredient based on the values in the ingredients form
          */
         function edit_ingredient() {
-            let form = document.querySelector('#ingredient_edit_form');
-            let ingredient_uri = form.querySelector('#ingredient_uri').value;
-            let tags = form.querySelector('[name=tags]').value.split(',');
-            // Remove empty tags
-            tags = tags.filter(tag => tag !== '');
-
-            pants.edit_ingredient(ingredient_uri, {
-                'name': form.querySelector('[name=name]').value,
-                'slug': form.querySelector('[name=slug]').value,
-                'description': form.querySelector('[name=description]').value,
+            pants.edit_ingredient(input_ingredient_uri.value, {
+                'name': input_name.value,
+                'slug': input_slug.value,
+                'description': input_description.value,
                 // @todo Cannot edit owner? Remove this if there is no case where this is possible
                 // 'owner': form.querySelector('[name=owner]').value,
-                'tags': tags,
-                'serving': form.querySelector('[name=serving]').value,
-                'introduction': form.querySelector('[name=introduction]').value,
-                'notes': form.querySelector('[name=notes]').value,
+                'tags': input_tags.value.split(',').filter(tag => tag !== ''),
+                'serving': input_serving.value,
+                'introduction': input_introduction.value,
+                'notes': input_notes.value,
 
                 // Nutritional Data
-                'kilojoules': form.querySelector('[name=kilojoules]').value,
-                'protein': form.querySelector('[name=protein]').value,
-                'fibre': form.querySelector('[name=fibre]').value,
-                'carbohydrate': form.querySelector('[name=carbohydrate]').value,
-                'fat': form.querySelector('[name=fat]').value,
-                'sugar': form.querySelector('[name=sugar]').value,
-                'saturatedfat': form.querySelector('[name=saturatedfat]').value,
-                'sodium': form.querySelector('[name=sodium]').value,
+                'kilojoules': input_kilojoules.value,
+                'protein': input_protein.value,
+                'fibre': input_fibre.value,
+                'carbohydrate': input_carbohydrate.value,
+                'fat': input_fat.value,
+                'sugar': input_sugar.value,
+                'saturatedfat': input_saturatedfat.value,
+                'sodium': input_sodium.value,
             })
                 .then(resp => {
                     let row_node = document.querySelector('#selected_row_node').extra_data.ag_data;
                     row_node.setData(resp);
-                    all_ingredients.gridOptions.api.flashCells({
+                    all_ingredients_grid.gridOptions.api.flashCells({
                         rowNodes: [row_node]
                     })
                 });
@@ -225,10 +239,10 @@
          * Deletes the currently selected ingredient
          */
         function delete_ingredient() {
-            pants.delete_ingredient(document.querySelector('#ingredient_uri').value)
+            pants.delete_ingredient(input_ingredient_uri.value)
                 .then(response => {
-                    all_ingredients.gridOptions.api.deselectAll();
-                    all_ingredients.gridOptions.api.refreshInfiniteCache();
+                    all_ingredients_grid.gridOptions.api.deselectAll();
+                    all_ingredients_grid.gridOptions.api.refreshInfiniteCache();
                 });
         }
 
@@ -236,35 +250,30 @@
          * Creates a new ingredient using the information in the input fields
          */
         function create_ingredient() {
-            let form = document.querySelector('#ingredient_edit_form');
-            let tags = form.querySelector('[name=tags]').value.split(',');
-            // Remove empty tags
-            tags = tags.filter(tag => tag !== '');
-
             pants.create_ingredient({
-                'name': form.querySelector('[name=name]').value,
-                'slug': form.querySelector('[name=slug]').value,
-                'description': form.querySelector('[name=description]').value,
+                'name': input_name.value,
+                'slug': input_slug.value,
+                'description': input_description.value,
                 // @todo Cannot edit owner? Remove this if there is no case where this is possible
                 // 'owner': form.querySelector('[name=owner]').value,
-                'tags': tags,
-                'serving': form.querySelector('[name=serving]').value,
-                'introduction': form.querySelector('[name=introduction]').value,
-                'notes': form.querySelector('[name=notes]').value,
+                'tags': input_tags.value.split(',').filter(tag => tag !== ''),
+                'serving': input_serving.value,
+                'introduction': input_introduction.value,
+                'notes': input_notes.value,
 
                 // Nutritional Data
-                'kilojoules': form.querySelector('[name=kilojoules]').value,
-                'protein': form.querySelector('[name=protein]').value,
-                'fibre': form.querySelector('[name=fibre]').value,
-                'carbohydrate': form.querySelector('[name=carbohydrate]').value,
-                'fat': form.querySelector('[name=fat]').value,
-                'sugar': form.querySelector('[name=sugar]').value,
-                'saturatedfat': form.querySelector('[name=saturatedfat]').value,
-                'sodium': form.querySelector('[name=sodium]').value,
+                'kilojoules': input_kilojoules.value,
+                'protein': input_protein.value,
+                'fibre': input_fibre.value,
+                'carbohydrate': input_carbohydrate.value,
+                'fat': input_fat.value,
+                'sugar': input_sugar.value,
+                'saturatedfat': input_saturatedfat.value,
+                'sodium': input_sodium.value,
             })
                 .then(resp => {
                     console.log(resp);
-                    all_ingredients.gridOptions.api.refreshInfiniteCache();
+                    all_ingredients_grid.gridOptions.api.refreshInfiniteCache();
                 })
         }
     </script>

@@ -152,12 +152,32 @@
 {% endblock %}
 {% block js %}
     <script>
+        // The data grids
         let all_recipes_grid;
         let all_ingredients;
+
+        // The various form, it's inputs, and repeaters
+        let form_recipe = document.querySelector('#recipe-edit-form');
+        let input_introduction = document.querySelector('#introduction');
+        let input_name = document.querySelector('#name');
+        let input_description = document.querySelector('#description');
+        let input_recipe_uri = document.querySelector('#recipe_uri');
+        let input_serves = document.querySelector('#serves');
+        let input_flag = document.querySelector('#flag');
+        let input_method = document.querySelector('#method');
+        let input_notes = document.querySelector('#notes');
+        let input_tags = document.querySelector('#tags');
+        let input_slug = document.querySelector('#slug');
+        let repeater_components = document.querySelector('#recipe-components');
+
+        // The various dynamically updated labels
+
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Get all the possible flag options from the server and load the flag select
             pants.get_recipe_flags().then(data=>
                 data.results.forEach(flag=>{
-                    document.querySelector('#flag').addOption(flag.name, `(${flag.char}) ${flag.name}`)
+                    input_flag.addOption(flag.name, `(${flag.char}) ${flag.name}`)
                 })
             );
 
@@ -246,16 +266,16 @@
                 if (!args.node.selected) return;
                 let recipe = args.data;
 
-                document.querySelector('#introduction').value = recipe.introduction;
-                document.querySelector('#name').value = recipe.name;
-                document.querySelector('#description').value = recipe.description;
-                document.querySelector('#recipe_uri').value = recipe.url;
-                document.querySelector('#serves').value = recipe.serves;
-                document.querySelector('#flag').value = recipe.flag || "";
-                document.querySelector('#method').value = recipe.method;
-                document.querySelector('#notes').value = recipe.notes;
-                document.querySelector('#tags').value = recipe.tags.join(',');
-                document.querySelector('#slug').value = recipe.slug;
+                input_introduction.value = recipe.introduction;
+                input_name.value = recipe.name;
+                input_description.value = recipe.description;
+                input_recipe_uri.value = recipe.url;
+                input_serves.value = recipe.serves;
+                input_flag.value = recipe.flag || "";
+                input_method.value = recipe.method;
+                input_notes.value = recipe.notes;
+                input_tags.value = recipe.tags.join(',');
+                input_slug.value = recipe.slug;
 
                 // Components are not included in results for performance reasons, make a separate call to get those
                 pants.get_recipe_full(recipe.url)
@@ -357,24 +377,19 @@
          * Creates a new recipe using the information in the recipe form
          */
         function create_recipe() {
-            let form = document.querySelector('#recipe-edit-form');
-            let tags = form.querySelector('#tags').value.split(',');
-            // Remove empty tags
-            tags = tags.filter(tag => tag !== '');
-
             pants.create_recipe({
-                'name': form.querySelector('#name').value,
-                'slug': form.querySelector('#slug').value,
-                'description': form.querySelector('#description').value,
+                'name': input_name.value,
+                'slug': input_slug.value,
+                'description': input_description.value,
                 // @todo Cannot edit owner? Remove this if there is no case where this is possible
                 // 'owner': form.querySelector('[name=owner]').value,
-                'tags': tags,
-                'serves': form.querySelector('#serves').value,
-                'introduction': form.querySelector('#introduction').value,
-                'notes': form.querySelector('#notes').value,
-                'method': form.querySelector('#method').value,
+                'tags': input_tags.value.split(',').filter(tag => tag !== ''),
+                'serves': input_serves.value,
+                'introduction': input_introduction.value,
+                'notes': input_notes.value,
+                'method': input_method.value,
                 'components': get_components(),
-                'flag': form.querySelector('#flag').value
+                'flag': input_flag.value
             })
                 .then(resp => {
                     all_recipes_grid.gridOptions.api.refreshInfiniteCache();
@@ -385,25 +400,19 @@
          * Updates the recipe based on the values in the recipe form
          */
         function edit_recipe() {
-            let form = document.querySelector('#recipe-edit-form');
-            let recipe_uri = form.querySelector('#recipe_uri').value;
-            let tags = form.querySelector('#tags').value.split(',');
-            // Remove empty tags
-            tags = tags.filter(tag => tag !== '');
-
-            pants.edit_recipe(recipe_uri, {
-                'name': form.querySelector('#name').value,
-                'slug': form.querySelector('#slug').value,
-                'description': form.querySelector('#description').value,
+            pants.edit_recipe(input_recipe_uri.value, {
+                'name': input_name.value,
+                'slug': input_slug.value,
+                'description': input_description.value,
                 // @todo Cannot edit owner? Remove this if there is no case where this is possible
                 // 'owner': form.querySelector('[name=owner]').value,
-                'tags': tags,
-                'serves': form.querySelector('#serves').value,
-                'introduction': form.querySelector('#introduction').value,
-                'notes': form.querySelector('#notes').value,
-                'method': form.querySelector('#method').value,
+                'tags': input_tags.value.split(',').filter(tag => tag !== ''),
+                'serves': input_serves.value,
+                'introduction': input_introduction.value,
+                'notes': input_notes.value,
+                'method': input_method.value,
                 'components': get_components(),
-                'flag': form.querySelector('#flag').value
+                'flag': input_flag.value
             })
                 .then(resp => {
                     let row_node = document.querySelector('#selected_row_node').pants_data.ag_data;
@@ -418,7 +427,7 @@
          * Deletes the currently selected recipe
          */
         function delete_recipe(){
-            pants.delete_recipe(document.querySelector('#recipe_uri').value)
+            pants.delete_recipe(input_recipe_uri.value)
                 .then(response => {
                     all_recipes_grid.gridOptions.api.deselectAll();
                     all_recipes_grid.gridOptions.api.refreshInfiniteCache();
@@ -436,7 +445,7 @@
          * @param note {string} any additional notes
          */
         function add_component(type, id, recipe_or_ingredient_id, name, amount, unit, note){
-            let recipe_components = document.getElementById("recipe-components");
+            let recipe_components = repeater_components;
 
             let component_node = document.getElementById('recipe-component-template').content.cloneNode(true);
             let component_wrapper_node = component_node.querySelector(".component-wrapper");
@@ -460,9 +469,9 @@
          * Gets all the components in the components list and returns a list suitable for passing onto the api
          */
         function get_components(){
-            let recipe_components = document.querySelectorAll("#recipe-components .component-wrapper");
+            let recipe_components_list = repeater_components.querySelectorAll(".component-wrapper");
             let output = [];
-            recipe_components.forEach(component=>{
+            recipe_components_list.forEach(component=>{
                 let component_obj = {
                         "name": component.querySelector("#name").innerText,
                         "note": component.classList.contains("has-note") ? component.querySelector("#note").value : "",
@@ -481,7 +490,7 @@
         }
 
         function remove_all_components(){
-            document.getElementById("recipe-components").textContent = "";
+            repeater_components.textContent = "";
         }
     </script>
 {% endblock %}
