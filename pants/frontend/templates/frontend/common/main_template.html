@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
 
-    <title>Ingredient Manager</title>
+    <title>PANTS</title>
     <meta name="description" content="An Ingredient Manager For PANTS">
     <meta name="author" content="AustinGrey">
 
@@ -13,7 +13,7 @@
     {% block common_css %}
         <link rel="stylesheet" href="{% static "/css/reset.css" %}">
         <link rel="stylesheet" href="{% static "/css/main_template.css" %}">
-        <link rel="stylesheet" href="{% static "/css/templatetags/float_input.css" %}">
+        <link rel="stylesheet" href="{% static "/css/libraries/float_input.css" %}">
 
         <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
         <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-balham.css">
@@ -39,7 +39,7 @@
             <a href="{% url 'recipe_manager' %}" class="nav-item">
                 <i class="fas fa-hamburger"></i>
             </a>
-            <a href="{% url 'diarybreakdown-list' %}" class="nav-item">
+            <a href="{% url 'diary_manager' %}" class="nav-item">
                 <i class="fas fa-book"></i>
             </a>
             <a href="{% url 'target-list' %}" class="nav-item">

@@ -1,0 +1,234 @@
+{% extends "frontend/common/main_template.html" %}
+{% block page_title %}Meal Diary{% endblock %}
+
+{% block content %}
+    <form id="diary_entry_form" class="flex-row-start">
+        <span>
+            <button id="time-text" class="text-only" type="button" onclick="change_time()">Just now,</button>
+            <span>I ate</span>
+        </span>
+        <div class="float_input-group" id="datetime-group">
+            <float-input id="date" label="Date" type="date" style="display: none"></float-input>
+            <float-input id="time" label="Time" type="time" style="display: none"></float-input>
+        </div>
+        <div class="float_input-group">
+            <float-input id="amount" label="Amount" extra="style='text-align:right;max-width:6em'"></float-input>
+            <float-input id="unit" label="Unit" type="select">
+                <option value="weight">Grams</option>
+                <option value="servings">Servings</option>
+            </float-input>
+        </div>
+        <span>of</span>
+        {#        <float-input id="component" label="Food" ></float-input>#}
+        <input id="component">
+    <button class="dark" type="button" onclick="create_diaryfood()">Add</button>
+    </form>
+    <div id="chart-container">
+        <canvas id="chart"></canvas>
+    </div>
+
+{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tagify/3.17.7/tagify.min.css"
+          integrity="sha512-hqxNYuIWMQISqScYH0xQ3i8kH4MMxhJYlp7mfYvBGJKSGyliqk7SXRK3MxBuUnSwA1XeV+S+y3ad4oF+xD6kpA=="
+          crossorigin="anonymous"/>
+    <style>
+        #diary_entry_form > span
+        {
+            margin-left: 1em;
+            margin-right: 1em;
+        }
+    #chart-container{
+        width: 100%;
+        height: 8em;
+        position: relative;
+    }
+    </style>
+{% endblock %}
+{% block js %}
+    {#    TODO: Is this necessary? We don't really need time conversion between timezones if we can help it#}
+    {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/1.24.1/luxon.min.js" integrity="sha512-IdHIbxMZbKEa2OSI0CcqlrgENti38ygeddwz6wOwjzSWygIYeJvHkvU1EFBCT1L471JM2QX36y8exP2QhgcB3A==" crossorigin="anonymous"></script>#}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tagify/3.17.7/tagify.min.js"
+            integrity="sha512-Kngmb6PkMXOkg76SHxpcsy2HQasqClt4KKl7jUe5IuG+Jg7l8PSjXtPNHKE+8wBIHARedIiOEqaca+hZQIzD/A=="
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <script>
+        // Setup variables to access form inputs
+        let date = document.getElementById('date');
+        let time = document.getElementById('time');
+        let amount = document.getElementById('amount');
+        let unit = document.getElementById('unit');
+        let component = document.getElementById('component');
+
+        // Setup obvious defaults, if you are coming here you probably want to record what happened right now
+        let sysDate = new Date(),
+            userDate = new Date(Date.UTC(sysDate.getFullYear(), sysDate.getMonth(), sysDate.getDate(), sysDate.getHours(), sysDate.getMinutes(), 0));
+        date.valueAsDate = userDate;
+        time.valueAsDate = userDate;
+
+        let time_state = 'just-now';
+        let change_time_button = document.getElementById('time-text');
+        // Setup progressively being able to specify more specifically when you ate the food
+        function change_time() {
+            if(time_state === 'just-now'){
+                time_state = 'today-at';
+                change_time_button.innerText = 'Today at';
+                time.style.display = 'inherit';
+
+                document.getElementById('datetime-group').after(change_time_button.nextElementSibling);
+
+            } else if (time_state === 'today-at'){
+                time_state = 'on-datetime';
+
+                let new_text = document.createElement('span');
+                new_text.innerText = 'On';
+                change_time_button.replaceWith(new_text);
+
+                date.style.display = 'inherit';
+            }
+        }
+
+        function create_diaryfood(){
+            let component_data = JSON.parse(component.value)[0];
+            pants.create_diaryfood({
+                'start_time':(new Date(date.value + "T" + time.value)).toISOString(),
+                // Set 'servings' or 'weight'
+                [unit.value]:amount.value,
+                // Set 'of_ingredient' or 'of_recipe' or 'name' depending on what has been entered
+                [component_data.url === undefined
+                    ? 'name'
+                    : (component_data.url.split("/").slice(-3)[0] === 'recipe'
+                        ? 'of_recipe'
+                        : 'of_ingredient')
+                    ]: component_data.url === undefined ? component_data.name : component_data.url,
+            })
+        }
+
+        // Setup combobox for selecting/specifying ingredient/recipe/one off food
+        function tagTemplate(recipe) {
+            return `
+                <tag title="${recipe.url}"
+                        contenteditable='false'
+                        spellcheck='false'
+                        tabIndex="-1"
+                        class="tagify__tag"
+                        ${this.getAttributes(recipe)}>
+                    <x title='' class='tagify__tag__removeBtn' role='button' aria-label='remove tag'></x>
+                    <div>
+                        <span class='tagify__tag-text'>${recipe.name}</span>
+                    </div>
+                </tag>
+            `
+        }
+
+        function suggestionItemTemplate(recipe) {
+            return `
+                <div ${this.getAttributes(recipe)}
+                    class='tagify__dropdown__item'
+                    tabindex="0"
+                    role="option">
+                    <strong>${recipe.name}</strong>
+                </div>
+            `
+        }
+
+        let tagify = new Tagify(component, {
+            maxTags: 1,
+            whitelist: [],
+            templates: {
+                tag: tagTemplate,
+                dropdownItem: suggestionItemTemplate,
+                dropdownItemNoMatch: function (data) {
+                    return `No match. Create one time entry for: ${data.value}`
+                }
+            },
+            dropdown: {
+                enabled: 0,
+                searchKeys: ['name']
+            }
+        })
+        let controller; // for aborting the call
+        // listen to any keystrokes which modify tagify's input
+        tagify.on('input', onInput)
+
+        function onInput(e) {
+            var value = e.detail.value;
+            tagify.settings.whitelist.length = 0; // reset the whitelist
+
+            // https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort
+            {#controller && controller.abort();#}
+            {#controller = new AbortController();#}
+
+            // show loading animation and hide the suggestions dropdown
+            tagify.loading(true).dropdown.hide.call(tagify);
+
+            pants.get_recipes({
+                startRow: 0,
+                endRow: 5,
+                searchKey: value,
+            })
+                .then(RES => RES.json())
+                .then(function (response) {
+                    // Give each recipe a 'value' that Tagify will use and the API will understand
+                    let results = response.results.map(recipe => {
+                        recipe['value'] = recipe['url'];
+                        return recipe
+                    })
+                    // update whitelist Array in-place
+                    tagify.settings.whitelist.splice(0, results.length, ...results)
+                    tagify.loading(false).dropdown.show.call(tagify, value); // render the suggestions dropdown
+                })
+        }
+
+        document.addEventListener('DOMContentLoaded', ()=>{
+            // Get the user's current daily target so that we can normalize all charts
+            let user_targets;
+            pants.get_target()
+                .then(resp=>user_targets=resp.results)
+                .then(()=>{
+                    pants.get_diaryfood()
+                    .then(resp=> {
+                        // Convert the response into a graphable set of categories.
+                        var ctx = document.getElementById('chart').getContext('2d');
+                        var myChart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                                datasets: [{
+                                    label: '# of Votes',
+                                    data: [12, 19, 3, 5, 2, 3],
+                                    backgroundColor: [
+                                        'rgba(255, 99, 132, 0.2)',
+                                        'rgba(54, 162, 235, 0.2)',
+                                        'rgba(255, 206, 86, 0.2)',
+                                        'rgba(75, 192, 192, 0.2)',
+                                        'rgba(153, 102, 255, 0.2)',
+                                        'rgba(255, 159, 64, 0.2)'
+                                    ],
+                                    borderColor: [
+                                        'rgba(255, 99, 132, 1)',
+                                        'rgba(54, 162, 235, 1)',
+                                        'rgba(255, 206, 86, 1)',
+                                        'rgba(75, 192, 192, 1)',
+                                        'rgba(153, 102, 255, 1)',
+                                        'rgba(255, 159, 64, 1)'
+                                    ],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                maintainAspectRatio: false,
+                                scales: {
+                                    yAxes: [{
+                                        ticks: {
+                                            beginAtZero: true
+                                        }
+                                    }]
+                                }
+                            },
+                        });
+                    })
+                })
+        })
+    </script>
+{% endblock %}
