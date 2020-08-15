@@ -188,7 +188,13 @@
             pants.get_target()
                 .then(resp=>user_targets=resp.results)
                 .then(()=>{
-                    pants.get_diaryfood()
+                    let min_start_time = new Date();
+                    // Set it back 24 hours
+                    let time_range = (1000*60*60) * 24
+                    min_start_time.setTime(min_start_time.getTime() - time_range);
+                    pants.get_diaryfood({
+                        min_start: min_start_time.toISOString()
+                    })
                     .then(resp=> {
                         // Graph each diaryfood as a dataset in a stacked bar chart
                         // Normalize each stack by the maximums
@@ -232,6 +238,10 @@
                                 datasets: datasets
                             },
                             options: {
+                                legend: {
+                                    position:'left',
+                                    reverse: true, // Want to show in order datasets in the stack (TODO this makes the most recent meal show at the bottom... is that what we want?)
+                                },
                                 maintainAspectRatio: false,
                                 scales: {
                                     yAxes: [{
