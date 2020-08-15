@@ -25,25 +25,29 @@ customElements.define('float-input',
             `;
             this.innerHTML = template;
 
+            /* Initialize Properties */
+            this.input_node = this.querySelector(`[name="${this.id}"]`);
+
             // Setup events and callbacks
             if(this.input_mask_name){
                 window.addEventListener('load', ()=>{
-                    let elem = this.querySelector(`[name="${this.id}"]`);
-                    if(typeof elem.pants_data === "undefined"){
-                        elem.pants_data = {};
+                    if(typeof this.input_node.pants_data === "undefined"){
+                        this.input_node.pants_data = {};
                     }
-                    this.input_mask = IMask(elem, this.named_masks[this.input_mask_name]);
+                    this.input_mask = IMask(this.input_node, this.named_masks[this.input_mask_name]);
                 })
             }
 
             if(this.type === "select"){
                 // Select elements need to know what the current option is in order to style "nothing chosen"
-                this.querySelector(`[name="${this.id}"]`).dataset.picked_option = "";
-                this.querySelector(`[name="${this.id}"]`).addEventListener('change', function(){
+                this.input_node.dataset.picked_option = "";
+                this.input_node.addEventListener('change', function(){
                     // 'this' is the select element
                     this.dataset.picked_option = this.value;
                 })
             }
+
+
         }
 
         /* Input Mask */
@@ -58,6 +62,10 @@ customElements.define('float-input',
         // The actual input mask created by IMask
         input_mask = undefined;
 
+        /* Properties */
+
+        input_node = undefined;
+
         /* Methods */
 
         /**
@@ -70,7 +78,7 @@ customElements.define('float-input',
                 let new_option = document.createElement('option');
                 new_option.value = value;
                 new_option.innerText = text;
-                this.querySelector(`[name="${this.id}"]`).appendChild(new_option)
+                this.input_node.appendChild(new_option)
             }
         }
 
@@ -146,10 +154,10 @@ customElements.define('float-input',
 
         /* Replacements for Input properties */
         get value(){
-            return this.querySelector(`[name="${this.id}"]`).value;
+            return this.input_node.value;
         }
         set value(value){
-            this.querySelector(`[name="${this.id}"]`).value = value;
+            this.input_node.value = value;
             // If this has an input mask, the mask's internal value will need to be synchronized.
             if(this.input_mask){
                 this.input_mask.updateValue();
@@ -159,8 +167,16 @@ customElements.define('float-input',
                 // Need to trigger a change so that the data-picked_option updates
                 let evt = document.createEvent("HTMLEvents");
                 evt.initEvent("change", false, true);
-                this.querySelector(`[name="${this.id}"]`).dispatchEvent(evt);
+                this.input_node.dispatchEvent(evt);
             }
+        }
+
+        get valueAsDate(){
+            return this.input_node.valueAsDate;
+        }
+
+        set valueAsDate(value){
+            return this.input_node.valueAsDate = value;
         }
 
         get id(){
