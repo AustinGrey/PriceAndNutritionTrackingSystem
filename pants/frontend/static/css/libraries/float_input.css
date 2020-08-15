@@ -78,3 +78,22 @@ select.field__input[data-picked_option=""]{
 select.field__input[data-picked_option=""]{
     color: grey;
 }
+
+
+/*
+Input Ligatures
+- allow side by side inputs to influence eachother
+*/
+.float_input-group{
+    display: flex;
+}
+.float_input-group float-input:not([style*='display: none'])+float-input .field__input{
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: none;
+}
+.float_input-group>float-input:first-child:not(:last-child) .field__input{
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right-style: dashed;
+}
