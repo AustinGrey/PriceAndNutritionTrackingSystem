@@ -7,12 +7,16 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 
+from ingredients.models import Ingredient
+from ingredients.serializers import IngredientSerializer
 from .models import Recipe, RecipeTag, RecipeFlag
 from .serializers import RecipeListSerializer, RecipeNestedSerializer, RecipeTagSerializer, RecipeFlagSerializer
 from targets.models import Target
@@ -188,3 +192,21 @@ class RecipeFlagViewSet(viewsets.ModelViewSet):
       return RecipeFlagSerializer
 
 
+@api_view()
+def component_search_view(request):
+   """
+   A hacky way to let us search all components by name, whether ingredients or recipes.
+   TODO integrate this better by either model inheritance, or improved search
+   """
+   query = request.GET.get("query", None)
+   ingredients = Ingredient.objects.all()
+   recipes = Recipe.objects.all()
+
+   if query:
+      ingredients = ingredients.filter(name__icontains=query)
+      recipes = recipes.filter(name__icontains=query)
+
+   return JsonResponse({
+      "results": IngredientSerializer(instance=ingredients, many=True, context={'request': request}).data +
+                 RecipeListSerializer(instance=recipes, many=True, context={'request': request}).data
+   })

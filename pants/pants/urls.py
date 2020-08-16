@@ -25,7 +25,7 @@ from website import views as website
 # Viewsets for API added here, not in included 'app.urls' links
 # as they are all under the /api/ space
 from ingredients.views import IngredientViewSet, IngredientTagViewSet
-from recipes.views import RecipeViewSet, RecipeNestedViewSet, RecipeTagViewSet, RecipeFlagViewSet
+from recipes.views import RecipeViewSet, RecipeNestedViewSet, RecipeTagViewSet, RecipeFlagViewSet, component_search_view
 from diary.views import DiaryFoodViewSet
 from pants.views import UserViewSet
 router = routers.DefaultRouter()
@@ -47,6 +47,7 @@ urlpatterns = [
 
     # REST Framework API
     path('api/1/', include(router.urls)),
+    path('api/1/component_search/', component_search_view),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
     # Django template Frontend

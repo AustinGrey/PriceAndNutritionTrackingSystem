@@ -308,6 +308,16 @@ class Pants {
             .then(resp=>resp.json())
     }
 
+    /**
+     * Allows searching all components (ingredients, recipes) by a simple search term
+     * @param search_term {string} term to search by
+     * @returns {Promise<void>}
+     */
+    async search_components(search_term){
+        return this.authenticated_fetch(this.get_api_path('component_search/?query=' + search_term))
+            .then(resp=>resp.json())
+    }
+
 
 }
 
