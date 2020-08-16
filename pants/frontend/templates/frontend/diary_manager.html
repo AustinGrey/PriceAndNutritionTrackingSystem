@@ -278,21 +278,45 @@
                         xMax: idx + 0.5,
                         backgroundColor: (nutrient_totals_normalized[nutrient][CURRENT_TOTAL] < min_val_normalized || nutrient_totals_normalized[nutrient][CURRENT_TOTAL] > 1) ? 'rgba(255,0,0,0.05)' : 'rgba(0,255,0,0.05)',
                     });
+                    // And because boxes in the annotations library do not yet support labels, we have to add invisible
+                    // lines so we can label each minimum and maximum. Ugh. TODO use box labels instead once annotations plugin supports it
+                    annotations.push({
+                        id: nutrient + '-min-label',
+                        type: 'line',
+                        mode: 'horizontal',
+                        scaleID: 'y-axis-0',
+                        value: min_val_normalized,
+                        borderColor: 'transparent',
+                        borderWidth: 0,
+                        label: {
+                            fontColor: 'black',
+                            fontSize: '8',
+                            backgroundColor: 'transparent',
+                            xPadding: 0,
+                            content: min_val,
+                            enabled: true,
+                            position: 'left',
+                            xAdjust: idx,
+                            yAdjust: 8,
+                        }
+                    });
                 });
 
                 // Annotate the bar chart stack by providing an annotation for the last dataset
-                datasets[datasets.length - 1]['datalabels'] = {
-                    display: true,
-                    color: 'black',
-                    anchor: 'end',
-                    clamp: true,
-                    align: 'top',
-                    offset: 0,
-                    padding: 0,
-                    formatter: function (value, context) {
-                        // Get the sum of the stack for the current label and display that instead
-                        let label = context.chart.data.labels[context.dataIndex];
-                        return (nutrient_totals_normalized[label][CURRENT_TOTAL] * 100).toFixed(0) + '%';
+                if(datasets.length > 0){
+                    datasets[datasets.length - 1]['datalabels'] = {
+                        display: true,
+                        color: 'black',
+                        anchor: 'end',
+                        clamp: true,
+                        align: 'top',
+                        offset: 0,
+                        padding: 0,
+                        formatter: function (value, context) {
+                            // Get the sum of the stack for the current label and display that instead
+                            let label = context.chart.data.labels[context.dataIndex];
+                            return (nutrient_totals_normalized[label][CURRENT_TOTAL] * 100).toFixed(0) + '%';
+                        }
                     }
                 }
 
@@ -365,14 +389,19 @@
                 return;
             }
             let diaryfood = components_data[0]
+            // Nutrient values on the food are stored per KG
+            // Scale according to weight/servings selected
+            let amount_in_grams = parseFloat(amount.value) * (unit.value === 'servings' ? parseFloat(diaryfood.serving) : 1.0);
+            let scale_factor = amount_in_grams / 1000;
             chart.data.datasets.push({
                 isTemporary: true,
                 label: diaryfood.name || '[No Name]',
                 backgroundColor: 'rgba(0,0,0,0.2)',
                 borderColor: 'red', // TODO wrong property?
                 data: Object.keys(nutrient_totals_normalized).map(nutrient=>{
+                    let nutrient_per_amount = (parseFloat(diaryfood[nutrient]) || 0) * scale_factor;
                     // Normalize each entry by the target maximum
-                    let normalized_value = (diaryfood[nutrient] || 0) / (target_set.maximum[nutrient] || 1);
+                    let normalized_value = nutrient_per_amount / (target_set.maximum[nutrient] || 1);
                     nutrient_totals_normalized[nutrient][TEMPORARY_NUTRIENT] += normalized_value;
                     return normalized_value;
                 }),
