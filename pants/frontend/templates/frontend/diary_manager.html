@@ -1,4 +1,5 @@
 {% extends "frontend/common/main_template.html" %}
+{% load static %}
 {% block page_title %}Meal Diary{% endblock %}
 
 {% block content %}
@@ -54,7 +55,8 @@
             integrity="sha512-Kngmb6PkMXOkg76SHxpcsy2HQasqClt4KKl7jUe5IuG+Jg7l8PSjXtPNHKE+8wBIHARedIiOEqaca+hZQIzD/A=="
             crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.7/chartjs-plugin-annotation.min.js" integrity="sha512-9hzM/Gfa9KP1hSBlq3/zyNF/dfbcjAYwUTBWYX+xi8fzfAPHL3ILwS1ci0CTVeuXTGkRAWgRMZZwtSNV7P+nfw==" crossorigin="anonymous"></script>
+{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.7/chartjs-plugin-annotation.min.js" integrity="sha512-9hzM/Gfa9KP1hSBlq3/zyNF/dfbcjAYwUTBWYX+xi8fzfAPHL3ILwS1ci0CTVeuXTGkRAWgRMZZwtSNV7P+nfw==" crossorigin="anonymous"></script>#}
+    <script src="{% static 'js/chartjs/chartjs-plugin-annotation-custom.js'%}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <script>
         // Setup variables to access form inputs
@@ -189,19 +191,19 @@
         // Defines the categories in the charts,
         // also keeps track of normalized nutrient totals so we can annotate hit or missed targets later
         // and keeps track of the temporary nutrient amounts that are currently in the chart
-        // 'nutrient': [current_total, temorary_nutrient_amount]
+        // 'nutrient': [current_total, temorary_nutrient_amount, min_target_value]
         let nutrient_totals_normalized = {
-            "kilojoules": [0, 0],
-            "protein": [0, 0],
-            "fibre": [0, 0],
-            "carbohydrate": [0, 0],
-            "fat": [0, 0],
-            "sugar": [0, 0],
-            "saturatedfat": [0, 0],
-            "sodium": [0, 0],
-            "cost": [0, 0],
+            "kilojoules": [0, 0, 0],
+            "protein": [0, 0, 0],
+            "fibre": [0, 0, 0],
+            "carbohydrate": [0, 0, 0],
+            "fat": [0, 0, 0],
+            "sugar": [0, 0, 0],
+            "saturatedfat": [0, 0, 0],
+            "sodium": [0, 0, 0],
+            "cost": [0, 0, 0],
         };
-        const CURRENT_TOTAL = 0, TEMPORARY_NUTRIENT = 1;
+        const CURRENT_TOTAL = 0, TEMPORARY_NUTRIENT = 1, MIN_TARGET = 2;
         /**
          * Draw a graph of the last 24 hours of diary food entries.
          * Requires a target_set to be passed in so that it can normalize and annotate the data
@@ -255,6 +257,9 @@
                 Object.keys(nutrient_totals_normalized).forEach((nutrient, idx)=>{
                     let min_val = parseFloat(target_set.minimum[nutrient])
                     let min_val_normalized = (min_val / (target_set.maximum[nutrient] || 1))
+                    let max_val = parseFloat(target_set.maximum[nutrient])
+                    // Store the min value normalized for other computations
+                    nutrient_totals_normalized[nutrient][MIN_TARGET] = min_val_normalized;
                     annotations.push({
                         type: 'box',
                         yScaleID: 'y-axis-0',
@@ -271,33 +276,68 @@
                     // Color the column depending on if target hit or missed
                     annotations.push({
                         type: 'box',
+                        id: nutrient + '-target-status',
                         yScaleID: 'y-axis-0',
                         xScaleID: 'x-axis-0',
-                        id: nutrient + '-target-status',
                         xMin: idx - 0.5,
                         xMax: idx + 0.5,
                         backgroundColor: (nutrient_totals_normalized[nutrient][CURRENT_TOTAL] < min_val_normalized || nutrient_totals_normalized[nutrient][CURRENT_TOTAL] > 1) ? 'rgba(255,0,0,0.05)' : 'rgba(0,255,0,0.05)',
                     });
                     // And because boxes in the annotations library do not yet support labels, we have to add invisible
                     // lines so we can label each minimum and maximum. Ugh. TODO use box labels instead once annotations plugin supports it
+                    // Okay so now I'm using this library, but the positioning is not as expected and somewhat broken, so
+                    // I'm dealing with it by collapsing the box to a point
+                    if(min_val !== max_val){
+                        annotations.push({
+                            type: 'box',
+                            id: nutrient + '-min-label',
+                            yScaleID: 'y-axis-0',
+                            xScaleID: 'x-axis-0',
+                            yMax: min_val_normalized,
+                            yMin: min_val_normalized,
+                            xMin: idx - 0.5,
+                            xMax: idx - 0.5,
+                            borderColor: 'transparent',
+                            borderWidth: 0,
+                            backgroundColor: 'transparent',
+                            label:{
+                                content: min_val.toFixed(1),
+                                enabled: true,
+                                position: "right",
+                                yAdjust: -8,
+                                xPadding: 0,
+                                yPadding: 0,
+                                fontColor: 'rgba(0,0,0,0.5)',
+                                fontSize: 8,
+                                cornerRadius: 0,
+                                backgroundColor: 'transparent'
+                            }
+                        });
+                    }
+                    // Also annotate max values
                     annotations.push({
-                        id: nutrient + '-min-label',
-                        type: 'line',
-                        mode: 'horizontal',
-                        scaleID: 'y-axis-0',
-                        value: min_val_normalized,
+                        type: 'box',
+                        id: nutrient + '-max-label',
+                        yScaleID: 'y-axis-0',
+                        xScaleID: 'x-axis-0',
+                        yMax: 1,
+                        yMin: 1,
+                        xMin: idx + 0.5,
+                        xMax: idx + 0.5,
                         borderColor: 'transparent',
                         borderWidth: 0,
-                        label: {
-                            fontColor: 'black',
-                            fontSize: '8',
-                            backgroundColor: 'transparent',
-                            xPadding: 0,
-                            content: min_val,
+                        backgroundColor: 'transparent',
+                        label:{
+                            content: min_val.toFixed(1),
                             enabled: true,
-                            position: 'left',
-                            xAdjust: idx,
-                            yAdjust: 8,
+                            position: "left",
+                            yAdjust: +8,
+                            xPadding: 4,
+                            yPadding: 0,
+                            fontColor: 'rgba(0,0,0,0.5)',
+                            fontSize: 8,
+                            cornerRadius: 0,
+                            backgroundColor: 'transparent'
                         }
                     });
                 });
@@ -381,6 +421,16 @@
                     break;
                 }
             }
+            // Re-enable the labels on the top-most permanent dataset
+            if(chart.data.datasets.length > 0){
+                chart.data.datasets[chart.data.datasets.length - 1].datalabels.display = true
+            }
+            // Re-compute the background color annotations based on the permanent totals only
+            for (let nutrient in nutrient_totals_normalized){
+                // TODO extract this to a sane location
+                let val = nutrient_totals_normalized[nutrient][CURRENT_TOTAL];
+                chart.annotation.elements[nutrient + "-target-status"].options.backgroundColor= (val < nutrient_totals_normalized[nutrient][MIN_TARGET] || val > 1) ? 'rgba(255,0,0,0.05)' : 'rgba(0,255,0,0.05)';
+            }
 
             let components_data = JSON.parse(component.value || '[]');
             // Check to ensure we have enough valid information to add the temporary dataset
@@ -388,7 +438,12 @@
                 if(has_changed) chart.update();
                 return;
             }
-            let diaryfood = components_data[0]
+            // Disable the labels on the top-most permanent dataset if it exists
+            if(chart.data.datasets.length > 0){
+                chart.data.datasets[chart.data.datasets.length - 1].datalabels.display = false
+            }
+
+            let diaryfood = components_data[0];
             // Nutrient values on the food are stored per KG
             // Scale according to weight/servings selected
             let amount_in_grams = parseFloat(amount.value) * (unit.value === 'servings' ? parseFloat(diaryfood.serving) : 1.0);
@@ -397,12 +452,12 @@
                 isTemporary: true,
                 label: diaryfood.name || '[No Name]',
                 backgroundColor: 'rgba(0,0,0,0.2)',
-                borderColor: 'red', // TODO wrong property?
+                borderColor: 'red', // TODO wrong property? This doesn't appear to be showing in the graph
                 data: Object.keys(nutrient_totals_normalized).map(nutrient=>{
                     let nutrient_per_amount = (parseFloat(diaryfood[nutrient]) || 0) * scale_factor;
                     // Normalize each entry by the target maximum
                     let normalized_value = nutrient_per_amount / (target_set.maximum[nutrient] || 1);
-                    nutrient_totals_normalized[nutrient][TEMPORARY_NUTRIENT] += normalized_value;
+                    nutrient_totals_normalized[nutrient][TEMPORARY_NUTRIENT] = normalized_value;
                     return normalized_value;
                 }),
                 datalabels: {
@@ -416,7 +471,10 @@
                     formatter: function (value, context) {
                         // Get the sum of the stack for the current label and display that instead
                         let label = context.chart.data.labels[context.dataIndex];
-                        let val = nutrient_totals_normalized[label][CURRENT_TOTAL] + nutrient_totals_normalized[label][TEMPORARY_NUTRIENT]
+                        let val = nutrient_totals_normalized[label][CURRENT_TOTAL] + nutrient_totals_normalized[label][TEMPORARY_NUTRIENT];
+                        // We can also conveniently update the background annotation to reflect the new status
+                        // TODO extract this to a sane location
+                        chart.annotation.elements[label + "-target-status"].options.backgroundColor= (val < nutrient_totals_normalized[label][MIN_TARGET] || val > 1) ? 'rgba(255,0,0,0.05)' : 'rgba(0,255,0,0.05)';
                         return (val * 100).toFixed(0) + '%';
                     }
                 }
