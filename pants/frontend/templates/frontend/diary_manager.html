@@ -55,6 +55,7 @@
             crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.7/chartjs-plugin-annotation.min.js" integrity="sha512-9hzM/Gfa9KP1hSBlq3/zyNF/dfbcjAYwUTBWYX+xi8fzfAPHL3ILwS1ci0CTVeuXTGkRAWgRMZZwtSNV7P+nfw==" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <script>
         // Setup variables to access form inputs
         let date = document.getElementById('date');
@@ -182,139 +183,219 @@
                 })
         }
 
-        document.addEventListener('DOMContentLoaded', ()=>{
-            // Get the user's current daily target so that we can normalize all charts
-            let user_targets;
-            pants.get_target()
-                .then(resp=>user_targets=resp.results)
-                .then(()=>{
-                    let min_start_time = new Date();
-                    // Set it back 24 hours
-                    let time_range = (1000*60*60) * 24
-                    min_start_time.setTime(min_start_time.getTime() - time_range);
-                    pants.get_diaryfood({
-                        min_start: min_start_time.toISOString()
-                    })
-                    .then(resp=> {
-                        // Graph each diaryfood as a dataset in a stacked bar chart
-                        // Normalize each stack by the maximums
 
-                        let colors = [
-                            '#0C79B4',
-                            '#27B2A3',
-                            '#C2B04F',
-                            '#DDA63E',
-                            '#E2BD0F',
-                        ]
+        // Store a reference to the chart
+        let chart;
+        // Defines the categories in the charts,
+        // also keeps track of normalized nutrient totals so we can annotate hit or missed targets later
+        // and keeps track of the temporary nutrient amounts that are currently in the chart
+        // 'nutrient': [current_total, temorary_nutrient_amount]
+        let nutrient_totals_normalized = {
+            "kilojoules": [0, 0],
+            "protein": [0, 0],
+            "fibre": [0, 0],
+            "carbohydrate": [0, 0],
+            "fat": [0, 0],
+            "sugar": [0, 0],
+            "saturatedfat": [0, 0],
+            "sodium": [0, 0],
+            "cost": [0, 0],
+        };
+        const CURRENT_TOTAL = 0, TEMPORARY_NUTRIENT = 1;
+        /**
+         * Draw a graph of the last 24 hours of diary food entries.
+         * Requires a target_set to be passed in so that it can normalize and annotate the data
+         * @param target_set
+         */
+        function draw_graph(target_set){
+            let min_start_time = new Date();
+            // Set it back 24 hours
+            let time_range = (1000*60*60) * 24
+            min_start_time.setTime(min_start_time.getTime() - time_range);
+            pants.get_diaryfood({
+                min_start: min_start_time.toISOString()
+            })
+            .then(resp=> {
+                // Graph each diaryfood as a dataset in a stacked bar chart
+                // Normalize each stack by the maximums
 
-                        let labels = [  "kilojoules",
-                                        "protein",
-                                        "fibre",
-                                        "carbohydrate",
-                                        "fat",
-                                        "sugar",
-                                        "saturatedfat",
-                                        "sodium",
-                                        "cost"]
-                        let datasets = [];
+                let colors = [
+                    '#0C79B4',
+                    '#27B2A3',
+                    '#C2B04F',
+                    '#DDA63E',
+                    '#E2BD0F',
+                ]
 
-                        // Keep track of nutrient totals so we can annotate hit or missed targets later
-                        let nutrient_totals_normalized = {
-                            "kilojoules": 0,
-                            "protein": 0,
-                            "fibre": 0,
-                            "carbohydrate": 0,
-                            "fat": 0,
-                            "sugar": 0,
-                            "saturatedfat": 0,
-                            "sodium": 0,
-                            "cost": 0,
-                        };
-                        resp.results.forEach((diaryfood, idx)=>{
-                            datasets.push({
-                                label: diaryfood.name || '[No Name]',
-                                backgroundColor: colors[idx % colors.length],
-                                data: labels.map(label=>{
-                                    // Normalize each entry by the target maximum
-                                    let normalized_value = (diaryfood[label] || 0) / (user_targets[0].maximum[label] || 1);
-                                    nutrient_totals_normalized[label] += normalized_value;
-                                    return normalized_value;
-                                })
-                            })
+                let datasets = [];
+                resp.results.forEach((diaryfood, idx)=>{
+                    datasets.push({
+                        label: diaryfood.name || '[No Name]',
+                        backgroundColor: colors[idx % colors.length],
+                        data: Object.keys(nutrient_totals_normalized).map(nutrient=>{
+                            // Normalize each entry by the target maximum
+                            let normalized_value = (diaryfood[nutrient] || 0) / (target_set.maximum[nutrient] || 1);
+                            nutrient_totals_normalized[nutrient][CURRENT_TOTAL] += normalized_value;
+                            return normalized_value;
                         })
-                        let annotations = []
-                        // Add the max as a line annotation (it's the same for every category because it's normalized)
-                        annotations.push({
-                                        id: '100-percent',
-                                        type: 'line',
-                                        mode: 'horizontal',
-                                        scaleID: 'y-axis-0',
-                                        value: '1',
-                                        borderColor: 'red',
-                                        borderWidth: 1,
-                                    });
-                        // Keep track of each target nutrients's mins as box annotations
-                        labels.forEach((nutrient, idx)=>{
-                            let min_val = parseFloat(user_targets[0].minimum[nutrient])
-                            let min_val_normalized = (min_val / (user_targets[0].maximum[nutrient] || 1))
-                            annotations.push({
-                                type: 'box',
-                                yScaleID: 'y-axis-0',
-                                xScaleID: 'x-axis-0',
-                                id: nutrient + '-min',
-                                yMax: min_val_normalized,
-                                yMin: min_val_normalized,
-                                xMin: idx - 0.5,
-                                xMax: idx + 0.5,
-                                borderColor: 'red',
-                                borderWidth: 1,
-                                backgroundColor: 'transparent',
-                            });
-                            // Color the column depending on if target hit or missed
-                            annotations.push({
-                                type: 'box',
-                                yScaleID: 'y-axis-0',
-                                xScaleID: 'x-axis-0',
-                                id: nutrient + '-target-status',
-                                xMin: idx - 0.5,
-                                xMax: idx + 0.5,
-                                backgroundColor: (nutrient_totals_normalized[nutrient] < min_val_normalized || nutrient_totals_normalized[nutrient] > 1) ? 'rgba(255,0,0,0.05)' : 'rgba(0,255,0,0.05)',
-                            });
-                        });
-
-                        var ctx = document.getElementById('chart').getContext('2d');
-                        var myChart = new Chart(ctx, {
-                            type: 'bar',
-                            data: {
-                                labels: labels,
-                                datasets: datasets
-                            },
-                            options: {
-                                legend: {
-                                    position:'left',
-                                    reverse: true, // Want to show in order of datasets in the stack (TODO this makes the most recent meal show at the bottom... is that what we want?)
-                                },
-                                maintainAspectRatio: false,
-                                scales: {
-                                    yAxes: [{
-                                        id: 'y-axis-0',
-                                        stacked:true,
-                                        ticks: {
-                                            beginAtZero: true
-                                        }
-                                    }],
-                                    xAxes: [{
-                                        id: 'x-axis-0',
-                                        stacked:true
-                                    }]
-                                },
-                                annotation:{
-                                    annotations:annotations
-                                }
-                            },
-                        });
                     })
                 })
+                let annotations = []
+                // Add the max as a line annotation (it's the same for every category because it's normalized)
+                annotations.push({
+                                id: '100-percent',
+                                type: 'line',
+                                mode: 'horizontal',
+                                scaleID: 'y-axis-0',
+                                value: '1',
+                                borderColor: 'red',
+                                borderWidth: 1,
+                            });
+                // Keep track of each target nutrients's mins as box annotations
+                Object.keys(nutrient_totals_normalized).forEach((nutrient, idx)=>{
+                    let min_val = parseFloat(target_set.minimum[nutrient])
+                    let min_val_normalized = (min_val / (target_set.maximum[nutrient] || 1))
+                    annotations.push({
+                        type: 'box',
+                        yScaleID: 'y-axis-0',
+                        xScaleID: 'x-axis-0',
+                        id: nutrient + '-min',
+                        yMax: min_val_normalized,
+                        yMin: min_val_normalized,
+                        xMin: idx - 0.5,
+                        xMax: idx + 0.5,
+                        borderColor: 'red',
+                        borderWidth: 1,
+                        backgroundColor: 'transparent',
+                    });
+                    // Color the column depending on if target hit or missed
+                    annotations.push({
+                        type: 'box',
+                        yScaleID: 'y-axis-0',
+                        xScaleID: 'x-axis-0',
+                        id: nutrient + '-target-status',
+                        xMin: idx - 0.5,
+                        xMax: idx + 0.5,
+                        backgroundColor: (nutrient_totals_normalized[nutrient][CURRENT_TOTAL] < min_val_normalized || nutrient_totals_normalized[nutrient][CURRENT_TOTAL] > 1) ? 'rgba(255,0,0,0.05)' : 'rgba(0,255,0,0.05)',
+                    });
+                });
+
+                // Annotate the bar chart stack by providing an annotation for the last dataset
+                datasets[datasets.length - 1]['datalabels'] = {
+                    display: true,
+                    color: 'black',
+                    anchor: 'end',
+                    clamp: true,
+                    align: 'top',
+                    offset: 0,
+                    padding: 0,
+                    formatter: function (value, context) {
+                        // Get the sum of the stack for the current label and display that instead
+                        let label = context.chart.data.labels[context.dataIndex];
+                        return (nutrient_totals_normalized[label][CURRENT_TOTAL] * 100).toFixed(0) + '%';
+                    }
+                }
+
+                var ctx = document.getElementById('chart').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(nutrient_totals_normalized),
+                        datasets: datasets
+                    },
+                    options: {
+                        legend: {
+                            position:'left',
+                            reverse: true, // Want to show in order of datasets in the stack (TODO this makes the most recent meal show at the bottom... is that what we want?)
+                        },
+                        maintainAspectRatio: false,
+                        scales: {
+                            yAxes: [{
+                                id: 'y-axis-0',
+                                stacked:true,
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }],
+                            xAxes: [{
+                                id: 'x-axis-0',
+                                stacked:true
+                            }]
+                        },
+                        annotation:{
+                            annotations:annotations
+                        },
+                        plugins: {
+                            datalabels:{
+                                display: false // disable, only want to show a label at the top of the stack (so I will add it to the last dataset)
+                            }
+                        }
+                    },
+                });
+            })
+        }
+
+        let user_target_set;
+        document.addEventListener('DOMContentLoaded', ()=>{
+            // Get the user's current daily target so that we can normalize all charts
+            pants.get_target()
+                .then(resp=>{
+                    user_target_set = resp.results[0];
+                    draw_graph(user_target_set);
+                })
         })
+
+        // Set up a listener for when the user is adding a diary entry.
+        // We can add a temporary dataset to show them what the food they are about to add will do to their targets
+        function add_temporary_dataset(target_set){
+            let has_changed = false;
+            // Remove the previously added temporary dataset if available
+            for(let [idx, dataset] of chart.data.datasets.entries()){
+                if(dataset.isTemporary){
+                    has_changed = true;
+                    chart.data.datasets.splice(idx, 1);
+                    break;
+                }
+            }
+
+            let components_data = JSON.parse(component.value || '[]');
+            // Check to ensure we have enough valid information to add the temporary dataset
+            if(amount.value === '' || unit.value === '' || components_data.length === 0){
+                if(has_changed) chart.update();
+                return;
+            }
+            let diaryfood = components_data[0]
+            chart.data.datasets.push({
+                isTemporary: true,
+                label: diaryfood.name || '[No Name]',
+                backgroundColor: 'rgba(0,0,0,0.2)',
+                borderColor: 'red', // TODO wrong property?
+                data: Object.keys(nutrient_totals_normalized).map(nutrient=>{
+                    // Normalize each entry by the target maximum
+                    let normalized_value = (diaryfood[nutrient] || 0) / (target_set.maximum[nutrient] || 1);
+                    nutrient_totals_normalized[nutrient][TEMPORARY_NUTRIENT] += normalized_value;
+                    return normalized_value;
+                }),
+                datalabels: {
+                    display: true,
+                    color: 'black',
+                    anchor: 'end',
+                    clamp: true,
+                    align: 'top',
+                    offset: 0,
+                    padding: 0,
+                    formatter: function (value, context) {
+                        // Get the sum of the stack for the current label and display that instead
+                        let label = context.chart.data.labels[context.dataIndex];
+                        let val = nutrient_totals_normalized[label][CURRENT_TOTAL] + nutrient_totals_normalized[label][TEMPORARY_NUTRIENT]
+                        return (val * 100).toFixed(0) + '%';
+                    }
+                }
+            });
+            chart.update();
+        }
+        amount.addEventListener('change', ()=>{add_temporary_dataset(user_target_set)})
+        unit.addEventListener('change', ()=>{add_temporary_dataset(user_target_set)})
+        component.addEventListener('change', ()=>{add_temporary_dataset(user_target_set)})
     </script>
 {% endblock %}
