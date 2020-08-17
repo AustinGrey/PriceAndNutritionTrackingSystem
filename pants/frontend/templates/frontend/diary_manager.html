@@ -454,7 +454,7 @@
                 backgroundColor: 'rgba(0,0,0,0.2)',
                 borderColor: 'red', // TODO wrong property? This doesn't appear to be showing in the graph
                 data: Object.keys(nutrient_totals_normalized).map(nutrient=>{
-                    let nutrient_per_amount = (parseFloat(diaryfood[nutrient]) || 0) * scale_factor;
+                    let nutrient_per_amount = (parseFloat(diaryfood['nutrition_data'][nutrient]) || 0) * scale_factor;
                     // Normalize each entry by the target maximum
                     let normalized_value = nutrient_per_amount / (target_set.maximum[nutrient] || 1);
                     nutrient_totals_normalized[nutrient][TEMPORARY_NUTRIENT] = normalized_value;
@@ -474,7 +474,7 @@
                         let val = nutrient_totals_normalized[label][CURRENT_TOTAL] + nutrient_totals_normalized[label][TEMPORARY_NUTRIENT];
                         // We can also conveniently update the background annotation to reflect the new status
                         // TODO extract this to a sane location
-                        chart.annotation.elements[label + "-target-status"].options.backgroundColor= (val < nutrient_totals_normalized[label][MIN_TARGET] || val > 1) ? 'rgba(255,0,0,0.05)' : 'rgba(0,255,0,0.05)';
+                        chart.annotation.elements[label + "-target-status"].options.backgroundColor = (val < nutrient_totals_normalized[label][MIN_TARGET] || val > 1) ? 'rgba(255,0,0,0.05)' : 'rgba(0,255,0,0.05)';
                         return (val * 100).toFixed(0) + '%';
                     }
                 }
