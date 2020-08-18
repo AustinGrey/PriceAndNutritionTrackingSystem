@@ -66,6 +66,15 @@
         let unit = document.getElementById('unit');
         let component = document.getElementById('component');
 
+        // Colors for graphing
+        let colors = [
+            '#0C79B4',
+            '#27B2A3',
+            '#C2B04F',
+            '#DDA63E',
+            '#E2BD0F',
+        ]
+
         // Setup obvious defaults, if you are coming here you probably want to record what happened right now
         let sysDate = new Date(),
             userDate = new Date(Date.UTC(sysDate.getFullYear(), sysDate.getMonth(), sysDate.getDate(), sysDate.getHours(), sysDate.getMinutes(), 0));
@@ -95,7 +104,13 @@
         }
 
         function create_diaryfood(){
-            let component_data = JSON.parse(component.value)[0];
+            let component_data;
+            try {
+                component_data = JSON.parse(component.value)[0];
+            }
+            catch{
+                return;
+            }
             pants.create_diaryfood({
                 'start_time':(new Date(date.value + "T" + time.value)).toISOString(),
                 // Set 'servings' or 'weight'
@@ -108,6 +123,16 @@
                         : 'of_ingredient')
                     ]: component_data.url === undefined ? component_data.name : component_data.url,
             })
+            // We could reload the whole graph now, but since we have a temporary dataset that should have been created
+            // with the values that were just added, we can just set that dataset as not temporary anymore
+            for(let [idx, dataset] of chart.data.datasets.entries()){
+                if(dataset.isTemporary){
+                    delete dataset.isTemporary;
+                    dataset.backgroundColor = colors[idx % colors.length];
+                    chart.update();
+                    break;
+                }
+            }
         }
 
         // Setup combobox for selecting/specifying ingredient/recipe/one off food
@@ -220,14 +245,6 @@
             .then(resp=> {
                 // Graph each diaryfood as a dataset in a stacked bar chart
                 // Normalize each stack by the maximums
-
-                let colors = [
-                    '#0C79B4',
-                    '#27B2A3',
-                    '#C2B04F',
-                    '#DDA63E',
-                    '#E2BD0F',
-                ]
 
                 let datasets = [];
                 resp.results.forEach((diaryfood, idx)=>{
