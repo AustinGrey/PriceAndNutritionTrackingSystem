@@ -256,7 +256,9 @@
                             let normalized_value = (diaryfood[nutrient] || 0) / (target_set.maximum[nutrient] || 1);
                             nutrient_totals_normalized[nutrient][CURRENT_TOTAL] += normalized_value;
                             return normalized_value;
-                        })
+                        }),
+                        pants_data: diaryfood,
+
                     })
                 })
                 let annotations = []
@@ -410,6 +412,14 @@
                             datalabels:{
                                 display: false // disable, only want to show a label at the top of the stack (so I will add it to the last dataset)
                             }
+                        },
+                        tooltips:{
+                            callbacks:{
+                                label: function (tooltipItem, data) {
+                                    let nutrient_grams = parseFloat(data.datasets[tooltipItem.datasetIndex].pants_data.nutrition_data[tooltipItem.label]);
+                                    return nutrient_grams.toFixed(2);
+                                }
+                            }
                         }
                     },
                 });
@@ -465,18 +475,26 @@
             // Scale according to weight/servings selected
             let amount_in_grams = parseFloat(amount.value) * (unit.value === 'servings' ? parseFloat(diaryfood.serving) : 1.0);
             let scale_factor = amount_in_grams / 1000;
+            let nutrition_data = {};
+            let data = Object.keys(nutrient_totals_normalized).map(nutrient=>{
+                let nutrient_per_amount = (parseFloat(diaryfood['nutrition_data'][nutrient]) || 0) * scale_factor;
+                // Normalize each entry by the target maximum
+                let normalized_value = nutrient_per_amount / (target_set.maximum[nutrient] || 1);
+                nutrient_totals_normalized[nutrient][TEMPORARY_NUTRIENT] = normalized_value;
+                // Also track this original amount in the pants data
+                nutrition_data[nutrient] = nutrient_per_amount;
+                return normalized_value;
+            });
+
             chart.data.datasets.push({
                 isTemporary: true,
                 label: diaryfood.name || '[No Name]',
                 backgroundColor: 'rgba(0,0,0,0.2)',
                 borderColor: 'red', // TODO wrong property? This doesn't appear to be showing in the graph
-                data: Object.keys(nutrient_totals_normalized).map(nutrient=>{
-                    let nutrient_per_amount = (parseFloat(diaryfood['nutrition_data'][nutrient]) || 0) * scale_factor;
-                    // Normalize each entry by the target maximum
-                    let normalized_value = nutrient_per_amount / (target_set.maximum[nutrient] || 1);
-                    nutrient_totals_normalized[nutrient][TEMPORARY_NUTRIENT] = normalized_value;
-                    return normalized_value;
-                }),
+                data: data,
+                pants_data: {
+                    nutrition_data: nutrition_data
+                },
                 datalabels: {
                     display: true,
                     color: 'black',
