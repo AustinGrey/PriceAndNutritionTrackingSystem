@@ -29,6 +29,7 @@ customElements.define('float-input',
             this.input_node = this.querySelector(`[name="${this.id}"]`);
 
             // Setup events and callbacks
+            // Input Masking
             if(this.input_mask_name){
                 window.addEventListener('load', ()=>{
                     if(typeof this.input_node.pants_data === "undefined"){
@@ -38,12 +39,33 @@ customElements.define('float-input',
                 })
             }
 
+            // Select elements publicizing what value is currently selected
             if(this.type === "select"){
                 // Select elements need to know what the current option is in order to style "nothing chosen"
                 this.input_node.dataset.picked_option = "";
                 this.input_node.addEventListener('change', function(){
                     // 'this' is the select element
                     this.dataset.picked_option = this.value;
+                })
+            }
+
+            // Setup autocompletes
+            if(this.type === 'autocomplete'){
+                this.autocomplete = new autoComplete({
+                    selector: ".field__input[type='autocomplete']",
+                    data: {
+                        src: ['some', 'results', 'results', 'results', 'resultsrdsadjklsahfdjklsafhdjkslafhdjksla'],
+                        cache: false
+                    },
+                    highlight: true,
+                    resultsList: {
+                        render: true,
+                        position: "beforebegin"
+                    },
+                    onSelection: feedback=>{
+                        this.input_node.blur();
+                        this.input_node.value = feedback.selection.value;
+                    },
                 })
             }
 
@@ -88,7 +110,6 @@ customElements.define('float-input',
         get name() {
             return this.getAttribute("name") || "";
         }
-
         set name(value) {
             return this.setAttribute("name", value)
         }
@@ -97,7 +118,6 @@ customElements.define('float-input',
         get type() {
             return this.getAttribute("type") || "text";
         }
-
         set type(value) {
             return this.setAttribute("type", value)
         }
@@ -106,7 +126,6 @@ customElements.define('float-input',
         get multiline() {
             return this.hasAttribute("multiline");
         }
-
         set multiline(value) {
             return this.setAttribute("multiline", value)
         }
@@ -115,7 +134,6 @@ customElements.define('float-input',
         get label() {
             return this.getAttribute("label")
         }
-
         set label(value) {
             return this.setAttribute("label", value)
         }
@@ -124,7 +142,6 @@ customElements.define('float-input',
         get extra() {
             return this.getAttribute("extra") || "";
         }
-
         set extra(value) {
             return this.setAttribute("extra", value)
         }
@@ -133,7 +150,6 @@ customElements.define('float-input',
         get container_extra() {
             return this.getAttribute("container_extra") || "";
         }
-
         set container_extra(value) {
             return this.setAttribute("container_extra", value)
         }
@@ -144,7 +160,6 @@ customElements.define('float-input',
         get input_mask_name() {
             return this.getAttribute("input_mask_name");
         }
-
         set input_mask_name(value) {
             return this.setAttribute("input_mask_name", value)
         }
@@ -174,7 +189,6 @@ customElements.define('float-input',
         get valueAsDate(){
             return this.input_node.valueAsDate;
         }
-
         set valueAsDate(value){
             return this.input_node.valueAsDate = value;
         }
@@ -183,7 +197,15 @@ customElements.define('float-input',
             return this.getAttribute("id");
         }
         set id(value){
-            return this.setAttribute("id");
+            return this.setAttribute("id", value);
+        }
+
+        get autocompleteSrc(){
+            return this.getAttribute("autocompleteSrc");
+        }
+        set autocompleteSrc(value){
+            this.autocomplete.data.src = value;
+            return this.setAttribute("autocompleteSrc", value);
         }
 
 

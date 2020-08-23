@@ -1,0 +1,62 @@
+.autoComplete_wrapper {
+    position: relative;
+    display: inline-block
+}
+
+.autoComplete {
+    position: relative;
+    outline: 0;
+    border-radius: var(--border-radius);
+    border: 1px solid black;
+    transition: all .4s ease;
+    text-overflow: ellipsis
+}
+/* TODO I dislike that this has to be an ID, should be a class */
+#autoComplete_list {
+    transition: all .1s ease-in-out;
+    position: absolute;
+    top: 100%;
+    max-width: 100%;
+    z-index: 1;
+}
+
+.autoComplete_result {
+    padding: .6rem;
+    border: 1px solid var(--gunmetal);
+    border-bottom-width: 0;
+    list-style: none;
+    text-align: left;
+    font-size: 1.1rem;
+    transition: all .1s ease-in-out;
+    background-color: #fff
+}
+
+.autoComplete_result:last-child {
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    border-bottom-width: 1px;
+}
+.autoComplete_result:first-child {
+    border-top-width: 0;
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+}
+
+.autoComplete_result:hover,
+.autoComplete_result:focus,
+.autoComplete_selected
+{
+    outline: 0;
+    cursor: pointer;
+    background-color: var(--baby-powder);
+    border-color: var(--shamrock-green);
+}
+.autoComplete_result:hover+.autoComplete_result,
+.autoComplete_result:focus+.autoComplete_result,
+.autoComplete_selected+.autoComplete_result
+{
+    border-top-color: var(--shamrock-green);
+}
+
+.autoComplete_highlighted {
+    color: var(--shamrock-green);
+}

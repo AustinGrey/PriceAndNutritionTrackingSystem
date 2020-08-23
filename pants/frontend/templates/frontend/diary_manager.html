@@ -22,6 +22,10 @@
         <span>of</span>
         {#        <float-input id="component" label="Food" ></float-input>#}
         <input id="component">
+{#        <div class="autoComplete_wrapper">#}
+{#            <input id="autoComplete" tabindex="1" class="autoComplete">#}
+{#        </div>#}
+        <float-input type="autocomplete" label="Food"></float-input>
     <button class="dark" type="button" onclick="create_diaryfood()">Add</button>
     </form>
     <div id="chart-container">
@@ -33,6 +37,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tagify/3.17.7/tagify.min.css"
           integrity="sha512-hqxNYuIWMQISqScYH0xQ3i8kH4MMxhJYlp7mfYvBGJKSGyliqk7SXRK3MxBuUnSwA1XeV+S+y3ad4oF+xD6kpA=="
           crossorigin="anonymous"/>
+{#    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@7.2.0/dist/css/autoComplete.min.css">#}
+    <link rel="stylesheet" href="{% static 'css/libraries/autocomplete.css' %}">
     <style>
         #diary_entry_form > span
         {
@@ -47,6 +53,7 @@
         overflow: auto;
     }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@7.2.0/dist/js/autoComplete.min.js"></script>
 {% endblock %}
 {% block js %}
     {#    TODO: Is this necessary? We don't really need time conversion between timezones if we can help it#}
@@ -166,7 +173,7 @@
         }
 
         let tagify = new Tagify(component, {
-            maxTags: 1,
+            mode: 'select',
             whitelist: [],
             templates: {
                 tag: tagTemplate,
@@ -519,5 +526,23 @@
         amount.addEventListener('change', ()=>{add_temporary_dataset(user_target_set)})
         unit.addEventListener('change', ()=>{add_temporary_dataset(user_target_set)})
         component.addEventListener('change', ()=>{add_temporary_dataset(user_target_set)})
+
+        {#let comp_auto = new autoComplete({#}
+        {#    selector: ".autoComplete",#}
+        {#    data: {#}
+        {#        src: ['some', 'results', 'results', 'results', 'resultsrdsadjklsahfdjklsafhdjkslafhdjksla'],#}
+        {#        cache: false#}
+        {#    },#}
+        {#    placeHolder: "Try me",#}
+        {#    highlight: true,#}
+        {#    resultsList: {#}
+        {#        render: true,#}
+        {#        position: "beforebegin"#}
+        {#    },#}
+        {#    onSelection: function (feedback) {#}
+        {#        document.querySelector(".autoComplete").blur();#}
+        {#        document.querySelector(".autoComplete").value = feedback.selection.value;#}
+        {#    },#}
+        {#})#}
     </script>
 {% endblock %}
