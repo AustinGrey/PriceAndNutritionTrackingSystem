@@ -21,11 +21,12 @@
         </div>
         <span>of</span>
         {#        <float-input id="component" label="Food" ></float-input>#}
-        <input id="component">
+{#        <input id="component">#}
 {#        <div class="autoComplete_wrapper">#}
 {#            <input id="autoComplete" tabindex="1" class="autoComplete">#}
 {#        </div>#}
-        <float-input type="autocomplete" label="Food"></float-input>
+{#        <float-input type="autocomplete" label="Food"></float-input>#}
+        <float-input id="component" type="autocomplete" multiline="true"></float-input>
     <button class="dark" type="button" onclick="create_diaryfood()">Add</button>
     </form>
     <div id="chart-container">
@@ -52,15 +53,31 @@
         resize: vertical;
         overflow: auto;
     }
+
+    .tagify{
+        --tag-hide-transition: 0s;
+        --tags-border-color: var(--gunmetal);
+        --tag-pad: var(--label-spacing) .5em 2px;
+        --tag-bg: rgba(0,0,0,0);
+        border-radius: var(--border-radius);
+        background-color: white;
+        flex-wrap: nowrap;
+    }
+    .tagify__tag{
+        min-width: max-content;
+        border: 0;
+        margin: 0;
+    }
+    tags.tagify--hasMaxTags .tagify__input{
+        display: none;
+    }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@7.2.0/dist/js/autoComplete.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tagify/3.17.7/tagify.min.js" integrity="sha512-Kngmb6PkMXOkg76SHxpcsy2HQasqClt4KKl7jUe5IuG+Jg7l8PSjXtPNHKE+8wBIHARedIiOEqaca+hZQIzD/A==" crossorigin="anonymous"></script>
 {% endblock %}
 {% block js %}
     {#    TODO: Is this necessary? We don't really need time conversion between timezones if we can help it#}
     {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/1.24.1/luxon.min.js" integrity="sha512-IdHIbxMZbKEa2OSI0CcqlrgENti38ygeddwz6wOwjzSWygIYeJvHkvU1EFBCT1L471JM2QX36y8exP2QhgcB3A==" crossorigin="anonymous"></script>#}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tagify/3.17.7/tagify.min.js"
-            integrity="sha512-Kngmb6PkMXOkg76SHxpcsy2HQasqClt4KKl7jUe5IuG+Jg7l8PSjXtPNHKE+8wBIHARedIiOEqaca+hZQIzD/A=="
-            crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.7/chartjs-plugin-annotation.min.js" integrity="sha512-9hzM/Gfa9KP1hSBlq3/zyNF/dfbcjAYwUTBWYX+xi8fzfAPHL3ILwS1ci0CTVeuXTGkRAWgRMZZwtSNV7P+nfw==" crossorigin="anonymous"></script>#}
     <script src="{% static 'js/chartjs/chartjs-plugin-annotation-custom.js'%}"></script>
@@ -140,81 +157,6 @@
                     break;
                 }
             }
-        }
-
-        // Setup combobox for selecting/specifying ingredient/recipe/one off food
-        function tagTemplate(component) {
-            return `
-                <tag title="${component.url}"
-                        contenteditable='false'
-                        spellcheck='false'
-                        tabIndex="-1"
-                        class="tagify__tag"
-                        ${this.getAttributes(component)}>
-                    <x title='' class='tagify__tag__removeBtn' role='button' aria-label='remove tag'></x>
-                    <div>
-                        <i class='fas fa-${component.component_type === 'recipe' ? 'hamburger' : 'carrot'}'></i>
-                        <span class='tagify__tag-text'>${component.name}</span>
-                    </div>
-                </tag>
-            `
-        }
-
-        function suggestionItemTemplate(component) {
-            return `
-                <div ${this.getAttributes(component)}
-                    class='tagify__dropdown__item'
-                    tabindex="0"
-                    role="option">
-                    <i class='fas fa-${component.component_type === 'recipe' ? 'hamburger' : 'carrot'}'></i>
-                    <strong>${component.name}</strong>
-                </div>
-            `
-        }
-
-        let tagify = new Tagify(component, {
-            mode: 'select',
-            whitelist: [],
-            templates: {
-                tag: tagTemplate,
-                dropdownItem: suggestionItemTemplate,
-                dropdownItemNoMatch: function (data) {
-                    return `No match. Create one time entry for: ${data.value}`
-                }
-            },
-            dropdown: {
-                enabled: 1,
-                searchKeys: ['name']
-            }
-        })
-        let controller; // for aborting the call
-        // listen to any keystrokes which modify tagify's input
-        tagify.on('input', onInput)
-
-        function onInput(e) {
-            var value = e.detail.value;
-            tagify.settings.whitelist.length = 0; // reset the whitelist
-
-            // https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort
-            {#controller && controller.abort();#}
-            {#controller = new AbortController();#}
-
-            // show loading animation and hide the suggestions dropdown
-            tagify.loading(true).dropdown.hide.call(tagify);
-
-            pants.search_components(value)
-                .then(function (response) {
-                    let results = response.results.map(component => {
-                        // Give each recipe a 'value' that Tagify will use and the API will understand
-                        component['value'] = component['url'];
-                        // Give each component a component_type that we can use to differentiate between ingredients and recipes
-                        component['component_type'] = component.url.split('/').splice(-3)[0];
-                        return component
-                    })
-                    // update whitelist Array in-place
-                    tagify.settings.whitelist.splice(0, results.length, ...results)
-                    tagify.loading(false).dropdown.show.call(tagify, value); // render the suggestions dropdown
-                })
         }
 
 

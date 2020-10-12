@@ -49,8 +49,84 @@ customElements.define('float-input',
                 })
             }
 
-            // Setup autocompletes
-            if(this.type === 'autocomplete'){
+            // Setup Tagify Autocomplete
+            if (this.type === 'autocomplete' && this.multiline) {
+                // Setup combobox for selecting/specifying ingredient/recipe/one off food
+                function tagTemplate(component) {
+                    return `
+                        <tag title="${component.url}"
+                                contenteditable='false'
+                                spellcheck='false'
+                                tabIndex="-1"
+                                class="tagify__tag"
+                                ${this.getAttributes(component)}>
+                            <x title='' class='tagify__tag__removeBtn' role='button' aria-label='remove tag'></x>
+                            <div>
+                                <i class='fas fa-${component.component_type === 'recipe' ? 'hamburger' : 'carrot'}'></i>
+                                <span class='tagify__tag-text'>${component.name}</span>
+                            </div>
+                        </tag>
+                    `
+                }
+
+                function suggestionItemTemplate(component) {
+                    return `
+                        <div ${this.getAttributes(component)}
+                            class='tagify__dropdown__item'
+                            tabindex="0"
+                            role="option">
+                            <i class='fas fa-${component.component_type === 'recipe' ? 'hamburger' : 'carrot'}'></i>
+                            <strong>${component.name}</strong>
+                        </div>
+                    `
+                }
+
+                let tagify = new Tagify(this.input_node, {
+                    maxTags: 1,
+                    whitelist: [],
+                    templates: {
+                        tag: tagTemplate,
+                        dropdownItem: suggestionItemTemplate,
+                        dropdownItemNoMatch: function (data) {
+                            return `No match. Create one time entry for: ${data.value}`
+                        }
+                    },
+                    dropdown: {
+                        enabled: 1,
+                        searchKeys: ['name']
+                    }
+                })
+                //let controller; // for aborting the call TODO implement arbortability
+                // listen to any keystrokes which modify tagify's input
+                tagify.on('input', onInput);
+
+                function onInput(e) {
+                    var value = e.detail.value;
+                    tagify.settings.whitelist.length = 0; // reset the whitelist
+
+                    // https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort
+                    //controller && controller.abort();
+                    //controller = new AbortController();
+
+                    // show loading animation and hide the suggestions dropdown
+                    tagify.loading(true).dropdown.hide.call(tagify);
+
+                    pants.search_components(value)
+                        .then(function (response) {
+                            let results = response.results.map(component => {
+                                // Give each recipe a 'value' that Tagify will use and the API will understand
+                                component['value'] = component['name'];
+                                // Give each component a component_type that we can use to differentiate between ingredients and recipes
+                                component['component_type'] = component.url.split('/').splice(-3)[0];
+                                return component
+                            })
+                            // update whitelist Array in-place
+                            tagify.settings.whitelist.splice(0, results.length, ...results)
+                            tagify.loading(false).dropdown.show.call(tagify, value); // render the suggestions dropdown
+                        })
+                }
+            } else if(this.type === 'autocomplete'){
+                // Setup regular autocomplete
                 this.autocomplete = new autoComplete({
                     selector: ".field__input[type='autocomplete']",
                     data: {
@@ -68,7 +144,6 @@ customElements.define('float-input',
                     },
                 })
             }
-
 
         }
 
