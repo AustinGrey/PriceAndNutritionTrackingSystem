@@ -11,6 +11,8 @@ from django.db.models import F
 from django.template.defaultfilters import slugify
 from django.utils.functional import cached_property
 
+from recipes.models import Recipe
+
 from .utils import add_nutrition_ratios
 
 not_negative = MinValueValidator(0)
@@ -281,4 +283,166 @@ class Ingredient(AbstractBaseNutrients):
          rqset = Recipe.objects.filter(components__of_recipe__in=rqset) # Recurse
 
       return values
+
+class Tag(models.Model):
+   """
+   Tags for labelling related models across the site. Has name, description, color and icon-name
+   e.g. grain, meat, legume, pulse, non-perishable, keto, "New Diet Week 1", etc.
+   """
+
+   # The actual tag identifier
+   name = models.CharField(
+      max_length=settings.TAG_LENGTH,
+      blank=False,
+      unique=True,
+   )
+
+   # An explanation about what this tag is used for
+   description = models.CharField(
+      max_length=settings.DESCR_LENGTH,
+      blank=True
+   )
+
+   # An rbg hex code that will be used for this color
+   color = models.CharField(
+      max_length=8
+   )
+
+   # An icon identifier that will be used for this tag
+   icon = models.CharField(
+      max_length=32
+   )
+
+   def __str__(self):
+      return self.name
+
+class Taggable(models.Model):
+   """
+   Abstract model to specify something can be tagged.
+   """
+
+   class Meta:
+      abstract=True
+
+   tags = models.ManyToManyField(
+      Tag,
+      related_name="tagged_with"
+   )
+
+class Food(AbstractBaseNutrients, Taggable):
+   """
+   Something that can be eaten, and therefore has nutrition.
+   """
+
+   # Human readable name of this food.
+   name = models.CharField(
+      max_length=settings.NAME_LENGTH,
+      blank=False,
+      unique=True,
+   )
+   # A longer description of what this food is.
+   description = models.CharField(
+      max_length=settings.DESCR_LENGTH,
+      blank=True
+   )
+
+   # Who has control over this food's information, if null only admin has control
+   owner = models.ForeignKey(
+      User,
+      blank=True,
+      null=True,
+      on_delete=models.CASCADE,
+      related_name='+',  # Prevents User-> related name being created
+   )
+
+   # A free form text introduction leading up to this food, useful if taking information from a blog and you want to keep
+   # the typical story or history that accompanies the food on food blogs.
+   introduction = models.TextField(blank=True)
+
+   # Free form box to keep notes on this food
+   notes = models.TextField(blank=True)
+
+class BaseComponent(models.Model):
+   """
+   Tracks how one food is a component of another food.
+   """
+   # The parent food that the component belongs to
+   recipe = models.ForeignKey(
+      'CombinationFood',
+      on_delete=models.CASCADE,
+      related_name='component_of'
+   )
+
+   # The food that is the component of the recipe
+   component = models.ForeignKey(
+      Food,
+      on_delete=models.CASCADE,
+      related_name='components'
+   )
+
+   # How much of component food (in kg) is being used by the recipe
+   amount = models.DecimalField(
+      decimal_places=5,  # Down to 0.1 of a gram
+      max_digits=9,  # Up to 1000 kgs
+      validators=[not_negative],
+      help_text="In kilograms",
+      null=True,
+      blank=True,
+   )
+
+   # A note that can be added at the users descretion regarding this component
+   note = models.CharField(max_length=settings.DESCR_LENGTH, blank=True)
+
+   created_at = models.DateTimeField(auto_now_add=True)
+   updated_at = models.DateTimeField(auto_now=True)
+
+class CombinationFood(Food):
+   """
+   Foods which are combinations of other foods in certain ratios, with recipes
+   """
+   components = models.ManyToManyField(
+      Food,
+      through=BaseComponent,
+      through_fields=('recipe', 'component'),
+      related_name='component_set'
+   )
+   #todo: what if a component is a combinationfood, and the components of that food are just choices, we could add
+   # 'choice components'? Or we could change components to give it a type that specifies how to treat the connected food
+   # (e.g. oneof, anyof, allof the linked foods components), or we could make combination foods have a type that
+   # indicates its a group of choices rather than a real recipe.
+
+class ExtensionFood(CombinationFood):
+   """
+   Combinations foods which are modifications to other combination foods. The components of this food override the
+   components of the parent food if they would otherwise clash
+   """
+   parent_food = models.ForeignKey(
+      CombinationFood,
+      on_delete=models.CASCADE,
+      related_name='parent_recipe'
+   )
+
+   def someFunc(self):
+      # Some basic attempt at what a migration would look like for all these new models.
+      ingredient = Ingredient()
+      food = Food(
+         name=ingredient.name,
+         description=ingredient.description,
+         owner=ingredient.owner,
+         introduction=ingredient.introduction,
+         notes=ingredient.notes
+      )
+      recipe = Recipe()
+      combination_food = CombinationFood(
+         name=recipe.name,
+         description=recipe.description,
+         owner=recipe.owner,
+         introduction=recipe.introduction,
+         notes=recipe.notes
+      )
+      for component in recipe.components:
+         base_component = BaseComponent(
+            recipe=combination_food,
+            component=component.of_recipe__name
+         )
 
