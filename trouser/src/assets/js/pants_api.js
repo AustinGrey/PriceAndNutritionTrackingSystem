@@ -207,10 +207,10 @@ class Pants {
      * @param {string} authentication.token CSRF token to use for requests
      * @param {string} authentication.username  username to use for basic auth requests
      * @param {string} authentication.password  password to use for basic auth requests
-     * @param {string} [api_hostname] The hostname of the server, if not passed in it will use window.location.host (which includes the port)
+     * @param {string} [api_hostname] The hostname of the server, if not passed in it will use the current protocol, host, and port
      */
     constructor(api_version, authentication, api_hostname) {
-        this.api_location = `${api_hostname || window.location.host}/api/${api_version}/`;
+        this.api_location = `${api_hostname || window.location.protocol + "//" + window.location.host}/api/${api_version}/`;
         this.authentication_method = authentication.method;
         if(authentication.method === "Basic"){
             this.api_uname = authentication.username;
