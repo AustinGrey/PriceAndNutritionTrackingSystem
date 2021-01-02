@@ -1,0 +1,44 @@
+// Define breakpoint variables (in sass since you cannot use css vars in media queries)
+$breakpoints: (
+  null: (), // Just there to simplify login when converting values
+  'xs': (max: 575px),
+  'sm': (min: 576px, max: 767px),
+  'md': (min: 768px, max: 991px),
+  'lg': (min: 992px, max: 1199px),
+  'xl': (min: 1200px, max: 1399px),
+  'xxl': (min: 1400px),
+);
+
+// Creates a media query that selects the screen size between the given bounds
+// if either bound is missing, that bound will be unbounded (0 to infinity)
+@mixin breakpoint-from($at-least:null, $up-to:null) {
+  // If the keys exist in the map
+  @if (map-has-key($breakpoints, $at-least) or $at-least == null) and (map_has_key($breakpoints, $up-to) or $up-to == null) {
+    // Convert the keys to values
+    $min: map_get(map-get($breakpoints, $at-least), min);
+    $max: map_get(map-get($breakpoints, $up-to), max);
+    // Prints a media query based on the values
+    @if $min != null and $max != null {
+      @media only screen and (min-width: $min) and (max-width: $max) {
+        @content;
+      }
+    } @else if $min!=null {
+      @media only screen and (min-width: $min) {
+        @content;
+      }
+    } @else if $max!=null {
+      @media only screen and (max-width: $max) {
+        @content;
+      }
+    } @else {
+      @error "Both min and max evalutated to null";
+    }
+
+  }
+
+    // If the key doesn't exist in the map
+  @else {
+    @error "Unfortunately, $at-least: `#{$at-least}` and $to: `#{$up-to}` could not be retrieved from `#{$breakpoints}`. "
+        + "Please make sure they are defined in the `$breakpoints` map, and at least one bound is specified";
+  }
+}

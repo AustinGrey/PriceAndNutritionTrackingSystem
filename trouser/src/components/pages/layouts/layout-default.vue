@@ -2,11 +2,13 @@
     <div :class="$options.name">
         <div class="menu">
             <div class="nav">
-                <router-link v-for="(item, key) in menu_items"
-                             :key="key"
-                             :to="item.url"
-                             class="nav-item"
-                             :class="{active: currentLoc === key}">
+                <router-link
+                        v-for="(item, key) in menu_items"
+                        :key="key"
+                        :to="item.url"
+                        class="nav-item"
+                        :class="{active: currentLoc === key}"
+                >
                     <fa-icon :icon="['fas', item.icon]"></fa-icon>
                 </router-link>
             </div>
@@ -39,19 +41,109 @@
 </script>
 
 <style scoped lang="scss">
+    @import "../../../assets/css/responsive";
+
+    // Mobile first design, xs screen sizes defined first
     .layout-default {
         display: grid;
-        grid-template-columns: var(--menu-collapsed-width) 1fr;
+        grid-template-columns: 1fr;
         // Right now the 'quick info' section is unused, unsure if I want to remove it, or utilize it.
-        grid-template-rows: 0 1fr;
+        grid-template-rows: 0 1fr var(--menu-collapsed-width);
         gap: 1px 1px;
-        grid-template-areas: "menu quick-info" "menu content";
+        grid-template-areas: "quick-info" "content" "menu";
 
         .quick-info {
             grid-area: quick-info;
             padding: var(--padding);
             display: flex;
             align-items: center;
+        }
+
+        .content {
+            grid-area: content;
+
+            padding: var(--padding);
+        }
+
+        .menu {
+            grid-area: menu;
+
+            background: var(--gunmetal);
+            color: var(--pine-green);
+
+            > .nav {
+                top: 0;
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+
+                > .nav-item {
+                    width: var(--menu-collapsed-width);
+                    height: var(--menu-collapsed-width);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    color: var(--pine-green);
+                    position: relative;
+
+                    &:visited{
+                        color: var(--pine-green);
+                    }
+
+                    &.router-link-exact-active::after{
+                        content: "";
+                        width: 0;
+                        height: 0;
+                        border-left: 0.5em solid transparent;
+                        border-top: 1em solid var(--shamrock-green);
+                        border-right: 0.5em solid transparent;
+                        position: absolute;
+                        top: -0.2em;
+                    }
+
+                    > svg{
+                        font-size: 2.5em;
+                    }
+                }
+            }
+
+            .spacer {
+                flex: 1;
+            }
+        }
+    }
+
+    @include breakpoint-from(md) {
+        .layout-default {
+            grid-template-columns: var(--menu-collapsed-width) 1fr;
+            // Right now the 'quick info' section is unused, unsure if I want to remove it, or utilize it.
+            grid-template-rows: 0 1fr;
+            gap: 1px 1px;
+            grid-template-areas: "menu quick-info" "menu content";
+
+            .quick-info {
+                padding: var(--padding);
+                display: flex;
+                align-items: center;
+            }
+
+            .menu{
+                >.nav {
+                    flex-direction: column;
+                    justify-content: flex-start;
+                    height: 100vh;
+
+                    > .nav-item {
+                        &.router-link-exact-active::after{
+                            border-top: 0.5em solid transparent;
+                            border-right: 1em solid var(--shamrock-green);
+                            border-bottom: 0.5em solid transparent;
+                            top: unset;
+                            right: -0.2em;
+                        }
+                    }
+                }
+            }
         }
     }
 </style>
@@ -77,18 +169,6 @@
     body {
         margin: 0;
         background: var(--baby-powder);
-    }
-
-
-    .menu {
-        grid-area: menu;
-    }
-
-
-
-    .content {
-        grid-area: content;
-        padding: var(--padding);
     }
 
     h1, h2, h3, h4, h5, h6 {
@@ -162,51 +242,7 @@
         margin: 0;
     }
 
-    /* Menu */
-    .menu {
-        background: var(--gunmetal);
-        color: var(--pine-green);
-    }
 
-    .menu > .nav {
-        height: 100vh;
-        position: sticky;
-        top: 0;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .menu > .nav > .nav-item {
-        width: var(--menu-collapsed-width);
-        height: var(--menu-collapsed-width);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: var(--pine-green);
-    }
-
-    .menu > .nav > .nav-item:visited {
-        color: var(--pine-green);
-    }
-
-    .menu > .nav > .nav-item > svg {
-        font-size: 2.5em;
-    }
-
-    .menu .spacer {
-        flex: 1;
-    }
-
-    .menu > .nav > .nav-item.router-link-exact-active::after {
-        content: "";
-        width: 0;
-        height: 0;
-        border-top: 0.5em solid transparent;
-        border-right: 1em solid var(--shamrock-green);
-        border-bottom: 0.5em solid transparent;
-        position: absolute;
-        right: -0.2em;
-    }
 
     /* Inputs */
     /* @todo move this to the float input component */
