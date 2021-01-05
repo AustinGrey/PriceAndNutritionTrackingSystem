@@ -148,7 +148,7 @@
                 staticVals: _static,
                 targetsGrid: {
                     columnDefs: [
-                        {headerName: "Name", field: "name", sort: 'asc'},
+                        {headerName: "Name", field: "name", sort: 'asc', pinned: "left", width: 125},
                         {headerName: "Description", field: "description"},
                         {headerName: "Daily", field: "daily_target"},
                     ],
@@ -156,6 +156,7 @@
                         flex: 1,
                         sortable: true,
                         resizable: true,
+                        minWidth: 100,
                     },
                     gridOptions: {},
                     datasource: {
@@ -262,12 +263,16 @@
 </script>
 
 <style scoped lang="scss">
+    @import "src/assets/css/responsive";
     .target-manager {
         display: grid;
-        grid-template-columns: 1fr 30em;
-        grid-template-rows: 4em 1fr;
-        gap: 0 var(--padding);
-        grid-template-areas: "header-all header-form" "targets-all target-selected";
+        grid:
+                "header-all" max-content
+                "targets-all" 10em
+                "header-form" max-content
+                "target-selected" 1fr
+                / 1fr;
+        gap: var(--padding) 0;
         min-height: calc(100vh - 7em); /* Make it fill as much of the screen as possible to start off*/
         .header-all {
             grid-area: header-all;
@@ -309,6 +314,16 @@
                     }
                 }
             }
+        }
+    }
+
+    @include breakpoint-from(md){
+        .target-manager{
+            grid:
+                    "header-all header-form" max-content
+                    "targets-all target-selected" 1fr
+                    / 1fr 30em;
+            gap: 0 var(--padding);
         }
     }
 </style>

@@ -272,15 +272,16 @@
                 recipeGrid: {
                     gridOptions: {},
                     columnDefs: [
-                        {headerName: "Name", field: "name"},
+                        {headerName: "Name", field: "name", pinned: "left", width: 125},
                         {headerName: "Description", field: "description"},
-                        {headerName: "Serves", field: "serves"},
+                        {headerName: "Serves", field: "serves", maxWidth: 65},
                         {headerName: "Notes", field: "notes"},
                     ],
                     defaultColDef: {
                         flex: 1,
                         sortable: true,
                         resizable: true,
+                        minWidth: 100,
                     },
                     rowModelType: 'infinite',
                     rowSelection: 'single',
@@ -304,15 +305,16 @@
                 componentsGrid: {
                     gridOptions: {},
                     columnDefs: [
-                        {headerName: "Name", field: "name"},
+                        {headerName: "Name", field: "name", pinned: "left", width: 125},
                         {headerName: "Description", field: "description"},
-                        {headerName: "Serving", field: "serving"},
+                        {headerName: "Serving", field: "serving", maxWidth: 70},
                         {headerName: "Notes", field: "notes"}
                     ],
                     defaultColDef: {
                         flex: 1,
                         sortable: true,
                         resizable: true,
+                        minWidth: 100,
                     },
                     rowModelType: 'infinite',
                     rowSelection: 'single',
@@ -507,21 +509,6 @@
                         }
                     });
                 });
-                /*
-                let component_data = JSON.parse(component.value)[0];
-                this.pants.create_diaryfood({
-                    'start_time': (new Date(date.value + "T" + time.value)).toISOString(),
-                    // Set 'servings' or 'weight'
-                    [unit.value]: amount.value,
-                    // Set 'of_ingredient', 'of_recipe' or 'name' depending on what has been entered
-                    [component_data.url === undefined
-                        ? 'name'
-                        : (component_data.url.split("/").slice(-3)[0] === 'recipe'
-                            ? 'of_recipe'
-                            : 'of_ingredient')
-                        ]: component_data.url === undefined ? component_data.name : component_data.url,
-                })
-                 */
             },
             // Setup progressively being able to specify more specifically when you ate the food
             changeTime() {
@@ -551,12 +538,17 @@
 </script>
 
 <style scoped lang="scss">
+    @import "src/assets/css/responsive";
+
     .diary {
         display: grid;
-        grid-template-columns: 1fr 30em;
-        grid-template-rows: 4em 1fr;
-        gap: 0 var(--padding);
-        grid-template-areas: 'header-add header-display' 'diary-add diary-display';
+        grid:
+                'header-add' max-content
+                'diary-add' 15em
+                'header-display' max-content
+                'diary-display' 1fr
+                /1fr;
+        gap: var(--padding) 0;
 
         height: 100%;
 
@@ -617,6 +609,16 @@
             .dailyTargetNutrient {
                 display: contents;
             }
+        }
+    }
+
+    @include breakpoint-from(md){
+        .diary{
+            grid:
+                    'header-add header-display' max-content
+                    'diary-add diary-display' 1fr
+                    /1fr 30em;
+            gap: 0 var(--padding);
         }
     }
 </style>
