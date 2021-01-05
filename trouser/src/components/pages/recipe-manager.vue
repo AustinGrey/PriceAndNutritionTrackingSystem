@@ -192,7 +192,7 @@
                     },
                     columnDefs: [
                         {
-                            headerName: "Actions",
+                            headerName: "", // "Actions" doesn't fit and gets awkwardly cut off
                             cellRenderer: "actionsCell",
                             cellRendererParams: {
                                 onClick: recipe => {
@@ -247,7 +247,7 @@
                     },
                     columnDefs: [
                         {
-                            headerName: "Actions",
+                            headerName: "", //"Actions" doesn't fit and gets awkwardly cut off
                             cellRenderer: "actionsCell",
                             cellRendererParams: {
                                 onClick: ingredient => {

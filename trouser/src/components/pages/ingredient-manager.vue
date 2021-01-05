@@ -193,9 +193,9 @@
             return {
                 all_ingredients: {},
                 columnDefs: [
-                    {headerName: "Name", field: "name", sort: 'asc'},
+                    {headerName: "Name", field: "name", sort: 'asc', pinned: 'left'},
                     {headerName: "Description", field: "description"},
-                    {headerName: "Serving", field: "serving"},
+                    {headerName: "Serving", field: "serving", width: 70},
                     {headerName: "Notes", field: "notes"},
                 ],
                 defaultColDef: {
@@ -375,48 +375,55 @@
     }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+    @import 'src/assets/css/responsive';
+
     #ingredient-manager {
         display: grid;
-        grid-template-columns: 1fr 30em;
-        grid-template-rows: 4em 1fr;
-        gap: 0 var(--padding);
-        grid-template-areas: "header-all header" "ingredients-all ingredient";
+        grid:
+            "header-all" max-content
+            "ingredients-all" 10em
+            "header" max-content
+            "ingredient" 1fr
+            / 1fr;
+        gap: var(--padding) 0;
 
-        min-height: calc(100vh - 7em); /* Make it fill as much of the screen as possible to start off*/
+        min-height: 100%; /* Make it fill as much of the screen as possible to start off*/
+
+        > .header-all {
+            grid-area: header-all;
+        }
+
+        > .ingredients-all {
+            grid-area: ingredients-all;
+            resize: vertical;
+            overflow: auto;
+
+            > .contained_table {
+                height: 100%;
+            }
+        }
+
+        > .ingredient {
+            grid-area: ingredient;
+
+            button, .field {
+                margin: 1px;
+            }
+        }
+
+        > .header {
+            grid-area: header;
+        }
     }
 
-    #ingredient-manager > .header-all {
-        grid-area: header-all;
-    }
-
-    #ingredient-manager > .ingredients-all {
-        grid-area: ingredients-all;
-        resize: vertical;
-        overflow: auto;
-    }
-
-    #ingredient-manager > .ingredient {
-        grid-area: ingredient;
-    }
-
-    #ingredient-manager > .header {
-        grid-area: header;
-    }
-
-    #ingredient-manager > .ingredients-all > .contained_table {
-        height: 100%;
-    }
-
-    #ingredient-manager > .ingredient {
-        max-width: 30em;
-    }
-
-    #ingredient-manager > .ingredient button {
-        margin: 1px;
-    }
-
-    #ingredient-manager > .ingredient .field {
-        margin: 1px;
+    @include breakpoint-from(md){
+        #ingredient-manager{
+            grid:
+                "header-all header" 4em
+                "ingredients-all ingredient" 1fr
+                / 1fr 30em;
+            gap: 0 var(--padding);
+        }
     }
 </style>
