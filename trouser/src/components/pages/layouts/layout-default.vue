@@ -154,7 +154,7 @@
 
     /* Layout/Typography */
     :root {
-        --menu-width: 4em;
+        --menu-width: 3em;
 
         --font-family-headings: 'Quicksand', sans-serif;
         --font-family-content: 'Raleway', sans-serif;

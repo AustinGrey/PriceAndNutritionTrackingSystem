@@ -191,10 +191,6 @@
                         actionsCell: ActionButtonCellRenderer,
                     },
                     columnDefs: [
-                        {headerName: "Name", field: "name"},
-                        {headerName: "Description", field: "description"},
-                        {headerName: "Serves", field: "serves"},
-                        {headerName: "Notes", field: "notes"},
                         {
                             headerName: "Actions",
                             cellRenderer: "actionsCell",
@@ -208,16 +204,22 @@
                                         "",
                                         "servings");
                                 },
-                                icon: "carrot"
+                                icon: "hamburger"
                             },
                             cellStyle: {"padding": "0"},
-                            maxWidth: 25
-                        }
+                            maxWidth: 25,
+                            pinned: "left",
+                        },
+                        {headerName: "Name", field: "name", pinned: "left", width: 125},
+                        {headerName: "Description", field: "description"},
+                        {headerName: "Serves", field: "serves", maxWidth: 65}, // Just the size of the header and no more
+                        {headerName: "Notes", field: "notes"},
                     ],
                     defaultColDef: {
                         flex: 1,
                         sortable: true,
                         resizable: true,
+                        minWidth: 100,
                     },
                     rowModelType: 'infinite',
                     rowSelection: 'single',
@@ -244,10 +246,6 @@
                         actionsCell: ActionButtonCellRenderer,
                     },
                     columnDefs: [
-                        {headerName: "Name", field: "name"},
-                        {headerName: "Description", field: "description"},
-                        {headerName: "Serving", field: "serving"},
-                        {headerName: "Notes", field: "notes"},
                         {
                             headerName: "Actions",
                             cellRenderer: "actionsCell",
@@ -264,13 +262,19 @@
                                 icon: "carrot"
                             },
                             cellStyle: {"padding": "0"},
-                            maxWidth: 25
-                        }
+                            maxWidth: 25,
+                            pinned: "left",
+                        },
+                        {headerName: "Name", field: "name", pinned: "left", width: 125},
+                        {headerName: "Description", field: "description"},
+                        {headerName: "Serving", field: "serving", maxWidth: 65},
+                        {headerName: "Notes", field: "notes"},
                     ],
                     defaultColDef: {
                         flex: 1,
                         sortable: true,
                         resizable: true,
+                        minWidth: 100,
                     },
                     rowModelType: 'infinite',
                     pagination: true,
@@ -480,17 +484,23 @@
 </script>
 
 <style scoped lang="scss">
-    @mixin resizeable-vertical{
+    @import 'src/assets/css/responsive';
+    @mixin resizeable-vertical {
         resize: vertical;
         overflow: auto;
     }
 
     #recipe-manager {
         display: grid;
-        grid-template-columns: 1fr 30em;
-        grid-template-rows: max-content 1fr max-content 1fr;
-        gap: 0 var(--padding);
-        grid-template-areas: "header-all-recipes header-recipe" "all-recipes recipe" "header-all-ingredients recipe" "all-ingredients recipe";
+        grid:
+                "header-all-recipes" max-content
+                "all-recipes" 10em
+                "header-all-ingredients" max-content
+                "all-ingredients" 10em
+                "header-recipe" max-content
+                "recipe" 1fr
+        / 1fr;
+        gap: var(--padding) 0;
 
         min-height: 100%; /* Make it fill the screen as much as possible for less flash when picking a recipe*/
 
@@ -502,7 +512,7 @@
             grid-area: all-recipes;
             @include resizeable-vertical;
 
-            #recipes-table{
+            #recipes-table {
                 height: 100%;
             }
         }
@@ -515,7 +525,7 @@
             grid-area: all-ingredients;
             @include resizeable-vertical;
 
-            #ingredients-table{
+            #ingredients-table {
                 height: 100%;
             }
         }
@@ -533,18 +543,27 @@
                 margin: 1px;
             }
         }
+
+        #recipe-components {
+            display: grid;
+            /*grid-template-columns: 1fr [note-start] 8em 7em 2em [note-end];*/
+            /*A somewhat hacky way to make this align with the 3 way split of fields above it*/
+            grid-template-columns: 2em calc(33% + 1px - 2em) [note-start] calc(33% + 3px) 1fr 2em [note-end];
+            margin: var(--padding) 1px;
+            align-items: center;
+
+            ::v-deep .recipe-component .note {
+                grid-column: note-start / note-end
+            }
+        }
     }
 
-    #recipe-components {
-        display: grid;
-        /*grid-template-columns: 1fr [note-start] 8em 7em 2em [note-end];*/
-        /*A somewhat hacky way to make this align with the 3 way split of fields above it*/
-        grid-template-columns: 2em calc(33% + 1px - 2em) [note-start] calc(33% + 3px) 1fr 2em [note-end];
-        margin: var(--padding) 1px;
-        align-items: center;
-
-        ::v-deep .recipe-component .note {
-            grid-column: note-start / note-end
+    @include breakpoint-from(md){
+        #recipe-manager{
+            grid-template-columns: 1fr 30em;
+            grid-template-rows: max-content 1fr max-content 1fr;
+            gap: 0 var(--padding);
+            grid-template-areas: "header-all-recipes header-recipe" "all-recipes recipe" "header-all-ingredients recipe" "all-ingredients recipe";
         }
     }
 </style>
