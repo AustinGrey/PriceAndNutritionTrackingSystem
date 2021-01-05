@@ -45,11 +45,11 @@
 
     // Mobile first design, xs screen sizes defined first
     .layout-default {
+        height: 100vh; // We take control of the layout entirely, and decide what scrolls when
         display: grid;
         grid-template-columns: 1fr;
         // Right now the 'quick info' section is unused, unsure if I want to remove it, or utilize it.
-        grid-template-rows: 0 1fr var(--menu-collapsed-width);
-        gap: 1px 1px;
+        grid-template-rows: 0 1fr var(--menu-width);
         grid-template-areas: "quick-info" "content" "menu";
 
         .quick-info {
@@ -61,8 +61,8 @@
 
         .content {
             grid-area: content;
-
             padding: var(--padding);
+            overflow: auto;
         }
 
         .menu {
@@ -78,8 +78,8 @@
                 justify-content: space-between;
 
                 > .nav-item {
-                    width: var(--menu-collapsed-width);
-                    height: var(--menu-collapsed-width);
+                    width: var(--menu-width);
+                    height: var(--menu-width);
                     display: flex;
                     justify-content: center;
                     align-items: center;
@@ -102,7 +102,7 @@
                     }
 
                     > svg{
-                        font-size: 2.5em;
+                        font-size: calc(var(--menu-width) / 2);
                     }
                 }
             }
@@ -115,10 +115,9 @@
 
     @include breakpoint-from(md) {
         .layout-default {
-            grid-template-columns: var(--menu-collapsed-width) 1fr;
+            grid-template-columns: var(--menu-width) 1fr;
             // Right now the 'quick info' section is unused, unsure if I want to remove it, or utilize it.
             grid-template-rows: 0 1fr;
-            gap: 1px 1px;
             grid-template-areas: "menu quick-info" "menu content";
 
             .quick-info {
@@ -148,13 +147,14 @@
     }
 </style>
 
-<style>
+<style lang="scss">
     @import url('https://fonts.googleapis.com/css2?family=Quicksand&family=Raleway&display=swap');
+    @import "./src/assets/css/responsive";
 
 
     /* Layout/Typography */
     :root {
-        --menu-collapsed-width: 5em;
+        --menu-width: 4em;
 
         --font-family-headings: 'Quicksand', sans-serif;
         --font-family-content: 'Raleway', sans-serif;
@@ -286,6 +286,12 @@
 
     button.text-only:hover {
         color: var(--pine-green);
+    }
+
+    @include breakpoint-from(md){
+        :root{
+            --menu-width: 5em;
+        }
     }
 </style>
 

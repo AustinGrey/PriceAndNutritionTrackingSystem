@@ -10,8 +10,8 @@
         </div>
         <div class="all-recipes resizable-vertical">
             <ag-grid-vue
-                    id="all_recipes_table"
-                    class="ag-theme-balham fill-height"
+                    id="recipes-table"
+                    class="ag-theme-balham"
                     :gridOptions="recipeGrid.gridOptions"
                     :frameworkComponents="recipeGrid.frameworkComponents"
                     :columnDefs="recipeGrid.columnDefs"
@@ -34,8 +34,8 @@
         </div>
         <div class="all-ingredients resizable-vertical">
             <ag-grid-vue
-                    id="ingredients"
-                    class="ag-theme-balham fill-height"
+                    id="ingredients-table"
+                    class="ag-theme-balham"
                     :gridOptions="componentsGrid.gridOptions"
                     :frameworkComponents="componentsGrid.frameworkComponents"
                     :columnDefs="componentsGrid.columnDefs"
@@ -375,7 +375,7 @@
                         this.recipeGrid.gridOptions.api.deselectAll();
                         this.recipeGrid.gridOptions.api.refreshInfiniteCache();
                         // Clear form
-                        for(let key of Object.keys(this.recipe)){
+                        for (let key of Object.keys(this.recipe)) {
                             this.recipe[key] = null
                         }
                     });
@@ -479,7 +479,12 @@
     }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+    @mixin resizeable-vertical{
+        resize: vertical;
+        overflow: auto;
+    }
+
     #recipe-manager {
         display: grid;
         grid-template-columns: 1fr 30em;
@@ -487,45 +492,47 @@
         gap: 0 var(--padding);
         grid-template-areas: "header-all-recipes header-recipe" "all-recipes recipe" "header-all-ingredients recipe" "all-ingredients recipe";
 
-        min-height: calc(100vh - 7em); /* Make it fill the screen as much as possible for less flash when picking a recipe*/
-    }
+        min-height: 100%; /* Make it fill the screen as much as possible for less flash when picking a recipe*/
 
-    #recipe-manager > .header-all-recipes {
-        grid-area: header-all-recipes;
-    }
+        > .header-all-recipes {
+            grid-area: header-all-recipes;
+        }
 
-    #recipe-manager > .all-recipes {
-        grid-area: all-recipes;
-    }
+        > .all-recipes {
+            grid-area: all-recipes;
+            @include resizeable-vertical;
 
-    #recipe-manager > .header-all-ingredients {
-        grid-area: header-all-ingredients;
-    }
+            #recipes-table{
+                height: 100%;
+            }
+        }
 
-    #recipe-manager > .all-ingredients {
-        grid-area: all-ingredients;
-    }
+        > .header-all-ingredients {
+            grid-area: header-all-ingredients;
+        }
 
-    #recipe-manager > .header-recipe {
-        grid-area: header-recipe;
-    }
+        > .all-ingredients {
+            grid-area: all-ingredients;
+            @include resizeable-vertical;
 
-    #recipe-manager > .recipe {
-        grid-area: recipe;
-    }
+            #ingredients-table{
+                height: 100%;
+            }
+        }
 
-    .fill-height {
-        height: 100%;
-    }
+        > .header-recipe {
+            grid-area: header-recipe;
+        }
 
-    #recipe-manager >>> .field,
-    #recipe-manager >>> button {
-        margin: 1px;
-    }
+        > .recipe {
+            grid-area: recipe;
+        }
 
-    .resizable-vertical {
-        resize: vertical;
-        overflow: auto;
+        ::v-deep {
+            .field, button {
+                margin: 1px;
+            }
+        }
     }
 
     #recipe-components {
@@ -535,9 +542,9 @@
         grid-template-columns: 2em calc(33% + 1px - 2em) [note-start] calc(33% + 3px) 1fr 2em [note-end];
         margin: var(--padding) 1px;
         align-items: center;
-    }
 
-    #recipe-components >>> .recipe-component .note{
-        grid-column: note-start / note-end
+        ::v-deep .recipe-component .note {
+            grid-column: note-start / note-end
+        }
     }
 </style>
