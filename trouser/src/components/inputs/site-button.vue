@@ -4,9 +4,15 @@ The typical button used on the site. Has props to allow changing between what ty
 <template>
     <button
             :id="id"
-            :class="[$options.name, {primary: primary}]"
+            :class="[
+                $options.name,
+                {primary: primary},
+                {'text-only': linkAppearance},
+                {'no-wrap': !wraps}
+                ]"
             @click="$emit('click')"
             :disabled="disabled"
+            :type="type"
     >
         <slot></slot>
     </button>
@@ -20,6 +26,10 @@ The typical button used on the site. Has props to allow changing between what ty
             primary: {type: Boolean, default: false},
             onClick: Function,
             disabled: {type: Boolean, default: false},
+            type: {type: String, default: "button"},
+            // If this button should look like a link instead of a button
+            linkAppearance: {type: Boolean, default: false},
+            wraps: {type: Boolean, default: true}
         }
     }
 </script>
@@ -30,10 +40,12 @@ The typical button used on the site. Has props to allow changing between what ty
     button {
         border-radius: var(--border-radius);
 
-        // Keep everything on one line
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        &.no-wrap{
+            // Keep everything on one line
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
 
         padding: var(--padding-thin);
 
@@ -41,6 +53,12 @@ The typical button used on the site. Has props to allow changing between what ty
         border: 1px solid c(button, border);
         color: c(button, font);
 
+        &:hover, &:active{
+            background: c(button-hover, background);
+            border-color: c(button-hover, border);
+            color: c(button-hover, font);
+        }
+        // Defined AFTER hover/active as hover/active should not show any change for disabled buttons
         &[disabled]{
             background: c(button-disabled, background);
             border-color: c(button-disabled, border);
@@ -52,6 +70,12 @@ The typical button used on the site. Has props to allow changing between what ty
             border-color: c(button-primary, border);
             color: c(button-primary, font);
 
+            &:hover, &:active{
+                background: c(button-primary-hover, background);
+                border-color: c(button-primary-hover, border);
+                color: c(button-primary-hover, font);
+            }
+
             // Why would a button be both primary, and disabled?
             &[disabled]{
                 background: c(button-primary-disabled, background);
@@ -60,25 +84,14 @@ The typical button used on the site. Has props to allow changing between what ty
             }
         }
 
-        &.dark {
-
-            &:hover {
-                color: var(--shamrock-green);
-            }
-
-            &:active {
-                box-shadow: inset 0 0 0.5em var(--pine-green);
-            }
-        }
-
         &.text-only {
-            border: 0;
+            border: none;
             padding: 0;
-            color: var(--shamrock-green);
-            background: #0000;
+            color: c(button-text-only, font);
+            background: none;
 
             &:hover {
-                color: var(--pine-green);
+                color: c(button-text-only-hover, font);
             }
         }
     }

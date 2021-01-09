@@ -1,18 +1,19 @@
 <template>
     <div class="flex-row-equalfill">
-        <button
-                class="dark"
+        <site-button
                 @click.prevent="onClick(rowData)"
         >
             <fa-icon :icon="['fas', icon]"></fa-icon>
-        </button>
+        </site-button>
     </div>
 </template>
 
 <script>
     import Vue from 'vue';
+    import SiteButton from "@/components/inputs/site-button";
 
     export default Vue.extend({
+        components: {SiteButton},
         data(){
             return{
                 icon: null,

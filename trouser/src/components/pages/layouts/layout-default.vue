@@ -41,7 +41,8 @@
 </script>
 
 <style scoped lang="scss">
-    @import "../../../assets/css/responsive";
+    @import "src/assets/css/responsive";
+    @import "src/assets/css/colors";
 
     // Mobile first design, xs screen sizes defined first
     .layout-default {
@@ -68,8 +69,9 @@
         .menu {
             grid-area: menu;
 
-            background: var(--gunmetal);
-            color: var(--pine-green);
+            background: c(menu, background);
+
+            border-top: 1px solid c(menu, border);
 
             > .nav {
                 top: 0;
@@ -83,23 +85,19 @@
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    color: var(--pine-green);
+                    color: c(menu, icon);
                     position: relative;
 
-                    &:visited{
-                        color: var(--pine-green);
+                    &.router-link-exact-active{
+                        color: c(menu, icon-active);
                     }
 
-                    &.router-link-exact-active::after{
-                        content: "";
-                        width: 0;
-                        height: 0;
-                        border-left: 0.5em solid transparent;
-                        border-top: 1em solid var(--shamrock-green);
-                        border-right: 0.5em solid transparent;
-                        position: absolute;
-                        top: -0.2em;
+                    &:hover{
+                        color: c(menu, icon-hover);
+                        background-color: c(menu, icon-hover-bg);
                     }
+
+
 
                     > svg{
                         font-size: calc(var(--menu-width) / 2);
@@ -131,6 +129,8 @@
                     flex-direction: column;
                     justify-content: flex-start;
                     height: 100vh;
+                    border-top: none;
+                    border-right: 1px solid c(menu, border);
 
                     > .nav-item {
                         &.router-link-exact-active::after{

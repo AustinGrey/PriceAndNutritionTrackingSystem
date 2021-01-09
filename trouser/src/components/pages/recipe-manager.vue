@@ -6,7 +6,7 @@
                     id='recipe_filter'
                     label='Search'
                     @keyup="recipeGrid.gridOptions.api.refreshInfiniteCache()"
-            ></input-float>
+            />
         </div>
         <div class="all-recipes resizable-vertical">
             <ag-grid-vue
@@ -22,7 +22,7 @@
                     :paginationAutoPageSize="recipeGrid.paginationAutoPageSize"
                     :datasource="recipeGrid.datasource"
                     @row-selected="onRecipeRowSelected"
-            ></ag-grid-vue>
+            />
         </div>
         <div class="header-all-ingredients flex-row-between flex-gap-regular">
             <h2>All Ingredients</h2>
@@ -30,7 +30,7 @@
                     id='ingredient_filter'
                     label='Search'
                     @keyup="componentsGrid.gridOptions.api.refreshInfiniteCache()"
-            ></input-float>
+            />
         </div>
         <div class="all-ingredients resizable-vertical">
             <ag-grid-vue
@@ -44,15 +44,15 @@
                     :pagination="componentsGrid.pagination"
                     :paginationAutoPageSize="componentsGrid.paginationAutoPageSize"
                     :datasource="componentsGrid.datasource"
-            ></ag-grid-vue>
+            />
         </div>
         <div class="header-recipe">
             <h2>Selected Recipe</h2>
         </div>
         <div class="recipe">
             <form id="recipe-edit-form" autocomplete="off">
-                <input type="hidden" id="selected_row_node">
-                <input type="hidden" id="recipe_uri" name="recipe_uri">
+                <input type="hidden" id="selected_row_node" />
+                <input type="hidden" id="recipe_uri" name="recipe_uri" />
 
                 <input-float
                         id='introduction'
@@ -60,7 +60,7 @@
                         hint="A story about how the grilled cheese came to be"
                         :multiline="true"
                         v-model="recipe.introduction"
-                ></input-float>
+                />
 
                 <div class="flex-row-equalfill">
                     <input-float
@@ -68,14 +68,14 @@
                             label='Name'
                             hint="Grilled Cheese"
                             v-model="recipe.name"
-                    ></input-float>
+                    />
                     <input-float
                             id='slug'
                             label='Slug'
                             hint="grilled-cheese"
                             input_mask_name="slug_mask"
                             v-model="recipe.slug"
-                    ></input-float>
+                    />
                 </div>
 
                 <input-float
@@ -84,7 +84,7 @@
                         hint="A sandwich made with melted cheese"
                         :multiline="true"
                         v-model="recipe.description"
-                ></input-float>
+                />
 
                 <div class="flex-row-equalfill">
                     <input-float
@@ -92,7 +92,7 @@
                             label='Serves'
                             hint="1"
                             v-model="recipe.serves"
-                    ></input-float>
+                    />
                     <input-float
                             id='tags'
                             label='Tags'
@@ -100,7 +100,7 @@
                             input_mask=tag_mask
                             :extra='{style:"flex:2"}'
                             v-model="recipe.tags"
-                    ></input-float>
+                    />
                     <!-- @todo it is unclear what flag is used for, need to add support for it -->
                     <input-float
                             id="flag"
@@ -126,7 +126,7 @@
                             :unit.sync="component.unit"
                             :amount.sync="component.amount"
                             @delete="recipe.components.splice(idx, 1)"
-                    ></recipe-component>
+                    />
                 </div>
 
                 <input-float
@@ -135,31 +135,37 @@
                         hint="Add cheese to bread, toast."
                         :multiline="true"
                         v-model="recipe.method"
-                ></input-float>
+                />
                 <input-float
                         id='notes'
                         label='Notes'
                         hint="Can use different cheeses than what is listed. Recipe is flexible."
                         :multiline="true"
                         v-model="recipe.notes"
-                ></input-float>
+                />
             </form>
             <div class="flex-row-equalfill">
-                <button
-                        class="oneline dark"
+                <site-button
+                        :primary="!canEdit"
                         @click="create_recipe"
-                >Create New
-                </button>
-                <button
+                >
+                    Create New
+                </site-button>
+                <site-button
                         class="oneline dark"
+                        :primary="canEdit"
                         :disabled="!canEdit"
                         @click="edit_recipe"
-                >Edit <span v-if="recipe.name"> {{recipe.name}}</span></button>
-                <button
+                >
+                    Edit<span v-if="recipe.name"> {{recipe.name}}</span>
+                </site-button>
+                <site-button
                         class="oneline dark"
                         :disabled="!canDelete"
                         @click="delete_recipe"
-                >Delete <span v-if="recipe.name"> {{recipe.name}}</span></button>
+                >
+                    Delete<span v-if="recipe.name"> {{recipe.name}}</span>
+                </site-button>
             </div>
         </div>
     </div>
@@ -174,10 +180,12 @@
     import "ag-grid-community/dist/styles/ag-theme-balham.css";
 
     import ActionButtonCellRenderer from '@/components/cell-renderers/action-button';
+    import SiteButton from "@/components/inputs/site-button";
 
     export default {
         name: "recipe-manager",
         components: {
+            SiteButton,
             RecipeComponent,
             InputFloat,
             AgGridVue

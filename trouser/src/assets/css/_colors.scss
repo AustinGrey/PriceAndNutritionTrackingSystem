@@ -19,9 +19,9 @@ $colors: (
   // Component colors, defining the default theme. For specific themes, create a new map with the name [theme name]-theme and then specify any colors you want to override from the default
 
   button:(
-    border: black,
+    border: $blueCrayola,
     background: white,
-    font: black,
+    font: $blueCrayola,
   ),
 
   button-disabled: (
@@ -30,11 +30,17 @@ $colors: (
     font: #444,
   ),
 
+  button-hover:(
+    border: $blueCrayola,
+    background: scale_color(white, $lightness: -20%),
+    font: $blueCrayola,
+  ),
+
   // The button that should draw the user's attention on the screen to the suggested action
   button-primary: (
     border: $blueCrayola,
-    background: white,
-    font: $blueCrayola,
+    background: $blueCrayola,
+    font: white,
 
     dark-theme: (
       background: black,
@@ -46,6 +52,29 @@ $colors: (
     background: #ddd,
     font: scale_color($blueCrayola, $saturation: -50%),
   ),
+
+  button-primary-hover:(
+    border: scale_color($blueCrayola, $lightness:-20%),
+    background: scale_color($blueCrayola, $lightness:-20%),
+    font: white,
+  ),
+
+  button-text-only:(
+    font: $blueCrayola,
+  ),
+
+  button-text-only-hover:(
+    font: scale_color($blueCrayola, $lightness:-20%),
+  ),
+
+  menu:(
+    background: white,
+    icon: black,
+    icon-active: $blueCrayola,
+    icon-hover: white,
+    icon-hover-bg: $blueCrayola,
+    border: black,
+  )
 );
 
 // The function to use the master map. You can use it like

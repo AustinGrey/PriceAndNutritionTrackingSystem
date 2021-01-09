@@ -10,7 +10,7 @@
                         :key="nutrient"
                         class="dailyTargetNutrient"
                 >
-                    <fa-icon :icon="['fas', staticVals.icons.nutrients[nutrient]]" fixedWidth/>
+                    <fa-icon :icon="['fas', staticVals.icons.nutrients[nutrient]]" fixedWidth />
                     <input-float
                             :id="nutrient"
                             :label="`${nutrient} (${staticVals.units[nutrient]})`"
@@ -48,7 +48,8 @@
                             :key="food.url"
                             @mouseover="highlightedFood = idx"
                             @mouseleave="highlightedFood = null"
-                    >{{highlightedFood === idx ? '-->' : ''}}{{food.name}}
+                    >
+                        {{highlightedFood === idx ? '-->' : ''}}{{food.name}}
                     </li>
                 </ul>
             </div>
@@ -58,13 +59,13 @@
         <div class="add-forms">
             <!-- The form for adding more diary entries -->
             <form id="diary_entry_form" class="flex-row-start">
-                <button
+                <site-button
                         id="time-text"
-                        class="text-only"
-                        type="button"
+                        :link-appearance="true"
                         @click="changeTime"
-                >{{staticVals.text.changeTimeBtn[timeSpecificity]}}
-                </button>
+                >
+                    {{staticVals.text.changeTimeBtn[timeSpecificity]}}
+                </site-button>
 
                 <input-float
                         id="date"
@@ -112,7 +113,7 @@
                     <option :value="staticVals.entryType.ONE_OFF_FOOD">One-off Food</option>
                 </input-float>
 
-                <button class="dark" type="button" @click="createDiaryFood">Add</button>
+                <site-button :primary="true" @click="createDiaryFood">Add</site-button>
             </form>
 
             <!-- Shows the tables for picking an existing food to add -->
@@ -163,6 +164,7 @@
     import "ag-grid-community/dist/styles/ag-grid.css";
     import "ag-grid-community/dist/styles/ag-theme-balham.css";
     import TargetSummary from "@/components/informational/target-summary";
+    import SiteButton from "@/components/inputs/site-button";
 
     // Setup obvious defaults, if you are coming here you probably want to record what happened right now
     // @todo set up the 'current time' just before its seen/used rather than on load to prevent stale times getting logged
@@ -243,7 +245,7 @@
 
     export default {
         name: "diary",
-        components: {TargetSummary, InputFloat, AgGridVue},
+        components: {SiteButton, TargetSummary, InputFloat, AgGridVue},
         inject: ['pants'],
         data() {
             return {
