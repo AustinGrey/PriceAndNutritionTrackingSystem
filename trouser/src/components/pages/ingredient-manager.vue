@@ -154,31 +154,32 @@
                 </div>
             </form>
             <div class="flex-row-equalfill">
-                <button
-                        class="oneline dark"
+                <site-button
+                        :primary="!canEdit"
                         @click="createIngredient"
-                >Create New
-                </button>
-                <button
-                        class="oneline dark"
+                >
+                    Create New
+                </site-button>
+                <site-button
+                        :primary="canEdit"
                         :disabled="!canEdit"
                         @click="editIngredient"
-                        id="edit_desc"
-                >Edit<span v-if="shortName"> {{shortName}}</span></button>
-                <button
-                        class="oneline dark"
+                        :id="edit_desc"
+                >Edit<span v-if="shortName"> {{shortName}}</span></site-button>
+                <site-button
                         :disabled="!canDelete"
                         @click="deleteIngredient"
-                        id="delete_desc"
-                >Delete<span v-if="shortName"> {{shortName}}</span></button>
+                        :id="delete_desc"
+                >Delete<span v-if="shortName"> {{shortName}}</span></site-button>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-    import InputFloat from '../inputs/input-float'
-    import {AgGridVue} from 'ag-grid-vue'
+    import InputFloat from '../inputs/input-float';
+    import SiteButton from '../inputs/site-button';
+    import {AgGridVue} from 'ag-grid-vue';
     import "ag-grid-community/dist/styles/ag-grid.css";
     import "ag-grid-community/dist/styles/ag-theme-balham.css";
 
@@ -186,7 +187,8 @@
         name: "ingredient-manager",
         components: {
             InputFloat,
-            AgGridVue
+            AgGridVue,
+            SiteButton
         },
         inject: ['pants'],
         data() {

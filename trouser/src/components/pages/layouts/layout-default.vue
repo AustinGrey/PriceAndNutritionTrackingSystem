@@ -250,43 +250,7 @@
         box-shadow: inset 0 0 1px var(--shamrock-green);
     }
 
-    button {
-        border-radius: var(--border-radius);
-        border: 1px solid black;
-    }
 
-    button.oneline {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    button.dark {
-        background: var(--gunmetal);
-        color: var(--pine-green);
-        font-weight: bold;
-        border-color: var(--pine-green);
-        padding: var(--padding-thin);
-    }
-
-    button.dark:hover {
-        color: var(--shamrock-green);
-    }
-
-    button.dark:active {
-        box-shadow: inset 0 0 0.5em var(--pine-green);
-    }
-
-    button.text-only {
-        border: 0;
-        padding: 0;
-        color: var(--shamrock-green);
-        background: #0000;
-    }
-
-    button.text-only:hover {
-        color: var(--pine-green);
-    }
 
     @include breakpoint-from(md){
         :root{

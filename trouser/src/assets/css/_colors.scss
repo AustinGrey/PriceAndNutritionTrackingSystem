@@ -17,15 +17,35 @@ $colors: (
   yellow: $yellowSunglow,
   orange: $yellowOrangeColorWheel,
   // Component colors, defining the default theme. For specific themes, create a new map with the name [theme name]-theme and then specify any colors you want to override from the default
-  tab: (
-    border: hsla(3, 100%, 59%, 0.50),
-    link: #007aff,
-    type: #8e8e93,
+
+  button:(
+    border: black,
+    background: white,
+    font: black,
+  ),
+
+  button-disabled: (
+    border: #444,
+    background: #ddd,
+    font: #444,
+  ),
+
+  // The button that should draw the user's attention on the screen to the suggested action
+  button-primary: (
+    border: $blueCrayola,
+    background: white,
+    font: $blueCrayola,
 
     dark-theme: (
-      type: black,
+      background: black,
     )
-  )
+  ),
+
+  button-primary-disabled: (
+    border: scale_color($blueCrayola, $saturation: -50%),
+    background: #ddd,
+    font: scale_color($blueCrayola, $saturation: -50%),
+  ),
 );
 
 // The function to use the master map. You can use it like
