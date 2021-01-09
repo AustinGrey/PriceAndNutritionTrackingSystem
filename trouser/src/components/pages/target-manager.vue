@@ -273,7 +273,7 @@
                 "target-selected" 1fr
                 / 1fr;
         gap: var(--padding) 0;
-        min-height: calc(100vh - 7em); /* Make it fill as much of the screen as possible to start off*/
+        min-height: 100%; /* Make it fill as much of the screen as possible to start off*/
         .header-all {
             grid-area: header-all;
         }

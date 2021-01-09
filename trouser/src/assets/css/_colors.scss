@@ -1,0 +1,55 @@
+// Store all colors in this file, including for additional themes, to improve app consistency
+
+// Store the actual colors as variables here to ensure actual color values are only specified once.
+// Use the actual color names to keep the colors uniquely identifiable
+$richBlackFogra29: #011C27;
+$blueCrayola: #2176FF;
+$blueJeans: #33A1FD;
+$yellowSunglow: #FDCA40;
+$yellowOrangeColorWheel: #F79824;
+
+// The master map, stores ALL colors used in the app
+$colors: (
+  // Top level colors, with simple names to ease access
+  blackBlue: $richBlackFogra29,
+  blue: $blueCrayola,
+  lightBlue: $blueJeans,
+  yellow: $yellowSunglow,
+  orange: $yellowOrangeColorWheel,
+  // Component colors, defining the default theme. For specific themes, create a new map with the name [theme name]-theme and then specify any colors you want to override from the default
+  tab: (
+    border: hsla(3, 100%, 59%, 0.50),
+    link: #007aff,
+    type: #8e8e93,
+
+    dark-theme: (
+      type: black,
+    )
+  )
+);
+
+// The function to use the master map. You can use it like
+// c(color) e.g. c(green) to get a specific color
+// c(component, component piece) e.g. c(tab, border) to the color of border tabs
+// c(component, theme, component piece) e.g. (tab, dark-theme, border) to get a themed component color value, if the themed color does not exist, the default from the component will be used instead
+@function c(
+  $name,
+  $theme:null,
+  $component:null,
+) {
+  // Retrieve a palette color value
+  @if ($theme == null) and ($component == null) {
+    @return map-get($colors, $name);
+  }
+    // Retrieve a component color value
+  @else if ($theme != null) and ($component == null) {
+    @return map-get(map-get($colors, $name), $theme);
+  }
+    // Retrieve a themed component color value
+  @else {
+    @if map_has_key(map-get(map-get($colors, $name), $theme), $component) {
+      @return map-get(map-get(map-get($colors, $name), $theme), $component);
+    }
+    @return map-get(map-get($colors, $name), $theme);
+  }
+}

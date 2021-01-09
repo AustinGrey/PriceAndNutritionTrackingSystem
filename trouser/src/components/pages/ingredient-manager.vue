@@ -382,7 +382,7 @@
         display: grid;
         grid:
             "header-all" max-content
-            "ingredients-all" 10em
+            "ingredients-all" max-content // The table contained here is resizeable and lists a default starting height
             "header" max-content
             "ingredient" 1fr
             / 1fr;
@@ -398,6 +398,7 @@
             grid-area: ingredients-all;
             resize: vertical;
             overflow: auto;
+            min-height: 10em;
 
             > .contained_table {
                 height: 100%;
