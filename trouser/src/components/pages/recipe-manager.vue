@@ -568,10 +568,13 @@
 
     @include breakpoint-from(md){
         #recipe-manager{
-            grid-template-columns: 1fr 30em;
-            grid-template-rows: max-content 1fr max-content 1fr;
+            grid:
+                    "header-all-recipes header-recipe" max-content
+                    "all-recipes recipe" 1fr
+                    "header-all-ingredients recipe" max-content
+                    "all-ingredients recipe" 1fr
+                    / 1fr 30em;
             gap: 0 var(--padding);
-            grid-template-areas: "header-all-recipes header-recipe" "all-recipes recipe" "header-all-ingredients recipe" "all-ingredients recipe";
         }
     }
 </style>

@@ -68,9 +68,7 @@
 
         .menu {
             grid-area: menu;
-
             background: c(menu, background);
-
             border-top: 1px solid c(menu, border);
 
             > .nav {
@@ -113,10 +111,10 @@
 
     @include breakpoint-from(md) {
         .layout-default {
-            grid-template-columns: var(--menu-width) 1fr;
-            // Right now the 'quick info' section is unused, unsure if I want to remove it, or utilize it.
-            grid-template-rows: 0 1fr;
-            grid-template-areas: "menu quick-info" "menu content";
+            grid:
+                    "menu quick-info" 0 // Right now the 'quick info' section is unused, unsure if I want to remove it, or utilize it.
+                    "menu content" 1fr
+                    / var(--menu-width) 1fr;
 
             .quick-info {
                 padding: var(--padding);
@@ -128,7 +126,7 @@
                 >.nav {
                     flex-direction: column;
                     justify-content: flex-start;
-                    height: 100vh;
+                    height: 100%;
                     border-top: none;
                     border-right: 1px solid c(menu, border);
 

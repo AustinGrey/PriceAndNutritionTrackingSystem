@@ -1,12 +1,11 @@
 <template>
     <div :class="{[$options.name]: true}">
-        <button
-                type="button"
+        <site-button
                 @click="onClickNote"
-                class="text-only"
+                :link-appearance="true"
         >
             <fa-icon :icon="['fas', 'sticky-note']" size="2x"></fa-icon>
-        </button>
+        </site-button>
         <label id="name">{{name}}</label>
 
         <input-float
@@ -27,13 +26,12 @@
             <option value="weight">grams</option>
             <option value="servings">servings</option>
         </input-float>
-        <button
-                type="button"
+        <site-button
                 @click="$emit('delete')"
-                class="text-only"
+                :link-appearance="true"
         >
             <fa-icon :icon="['fas', 'minus']" size="2x"></fa-icon>
-        </button>
+        </site-button>
 
         <input-float
                 :id="`${id}:note`"
@@ -51,10 +49,11 @@
 
 <script>
     import InputFloat from "@/components/inputs/input-float";
+    import SiteButton from "@/components/inputs/site-button";
 
     export default {
         name: "recipe-component",
-        components: {InputFloat},
+        components: {SiteButton, InputFloat},
         props: {
             name: String,
             note: String,

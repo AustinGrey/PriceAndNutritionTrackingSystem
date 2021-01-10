@@ -8,6 +8,8 @@ $blueJeans: #33A1FD;
 $yellowSunglow: #FDCA40;
 $yellowOrangeColorWheel: #F79824;
 
+$gunmetal: hsla(227, 15%, 24%, 1);
+
 // The master map, stores ALL colors used in the app
 $colors: (
   // Top level colors, with simple names to ease access
@@ -74,6 +76,12 @@ $colors: (
     icon-hover: white,
     icon-hover-bg: $blueCrayola,
     border: black,
+  ),
+
+  checkbox:(
+    background: white,
+    border: $gunmetal,
+    selected-shadow: scale_color($blueCrayola, $alpha:-25%),
   )
 );
 

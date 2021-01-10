@@ -1,8 +1,16 @@
 <template>
-    <div :class="{[$options.name]: true, checked: internalValue}">
-        <input :id="id" type="checkbox" v-model="internalValue">
+    <div
+            :class="{[$options.name]: true, checked: internalValue}"
+    >
+        <input
+                :id="id"
+                type="checkbox"
+                v-model="internalValue"
+        >
         <label :for="id">
-            <div class="fake-checkbox"><fa-icon :icon="['fas', 'check']" v-show="internalValue"></fa-icon></div>
+            <span class="fake-checkbox">
+                <fa-icon :icon="['fas', 'check']" v-show="internalValue"></fa-icon>
+            </span>
             {{label}}
         </label>
     </div>
@@ -38,6 +46,8 @@
 </script>
 
 <style scoped lang="scss">
+    @import "src/assets/css/colors";
+
     .input-checkbox{
         input{
             // Hide the real checkbox, it is hard to style, so we only use it to store the value
@@ -46,9 +56,9 @@
 
         label{
             --label-spacing: calc(1.1em - 2px); // the -2px makes this the same as for other float inputs
-            background: white;
+            background: c(checkbox, background);
             box-sizing: border-box;
-            border: 1px solid var(--gunmetal);
+            border: 1px solid c(checkbox, border);
             padding: calc(var(--label-spacing) / 2) 0.5em calc(var(--label-spacing) / 2);
             width: 100%;
             font-family: var(--font-family-content);
@@ -76,7 +86,7 @@
         .fake-checkbox{
             width: 1em;
             height: 1em;
-            border: 1px solid var(--gunmetal);
+            border: 1px solid c(checkbox, border);
             border-radius: var(--border-radius);
             padding: 0.1em;
             background: white;
@@ -86,7 +96,7 @@
         // Used to determine how this checkbox should look when checked
         &.checked{
             label{
-                box-shadow: inset 0 0 5px 0 rgba(58, 165, 0, 0.75);
+                box-shadow: inset 0 0 5px 0 c(checkbox, selected-shadow);
             }
         }
     }

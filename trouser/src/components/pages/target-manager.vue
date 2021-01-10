@@ -64,24 +64,25 @@
                     ></input-float>
                 </div>
 
-                <button
-                        class="oneline dark"
-                        type="button"
+                <site-button
                         @click="createTarget"
-                >Create New
-                </button>
-                <button
-                        class="oneline dark"
-                        type="button"
+                        :primary="!canEdit"
+                >
+                    Create New
+                </site-button>
+                <site-button
                         :disabled="!canEdit"
+                        :primary="canEdit"
                         @click="editTarget"
-                >Edit</button>
-                <button
-                        class="oneline dark"
-                        type="button"
+                >
+                    Edit
+                </site-button>
+                <site-button
                         :disabled="!canDelete"
                         @click="deleteTarget"
-                >Delete</button>
+                >
+                    Delete
+                </site-button>
             </form>
         </div>
     </div>
@@ -93,6 +94,7 @@
     import "ag-grid-community/dist/styles/ag-grid.css";
     import "ag-grid-community/dist/styles/ag-theme-balham.css";
     import InputCheckbox from "@/components/inputs/input-checkbox";
+    import SiteButton from "@/components/inputs/site-button";
 
     // A blank nutrition object, to be used for both the target max and min
     // @todo extract to pants api?
@@ -138,6 +140,7 @@
     export default {
         name: "target-manager",
         components: {
+            SiteButton,
             InputCheckbox,
             InputFloat,
             AgGridVue
