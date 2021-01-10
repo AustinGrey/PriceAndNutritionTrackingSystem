@@ -156,21 +156,21 @@
             <div class="flex-row-equalfill">
                 <site-button
                         :primary="!canEdit"
-                        @click="createIngredient"
+                        @click.native="createIngredient"
                 >
                     {{canEdit ? "Copy New" : "Create New"}}
                 </site-button>
                 <site-button
                         :primary="canEdit"
                         :disabled="!canEdit"
-                        @click="editIngredient"
+                        @click.native="editIngredient"
                         id="edit_desc"
                 >
                     Edit<span v-if="shortName"> {{shortName}}</span>
                 </site-button>
                 <site-button
                         :disabled="!canDelete"
-                        @click="deleteIngredient"
+                        @click.native="deleteIngredient"
                         id="delete_desc"
                 >
                     Delete<span v-if="shortName"> {{shortName}}</span>

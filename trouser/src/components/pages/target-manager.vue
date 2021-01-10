@@ -65,7 +65,7 @@
                 </div>
 
                 <site-button
-                        @click="createTarget"
+                        @click.native="createTarget"
                         :primary="!canEdit"
                 >
                     Create New
@@ -73,13 +73,13 @@
                 <site-button
                         :disabled="!canEdit"
                         :primary="canEdit"
-                        @click="editTarget"
+                        @click.native="editTarget"
                 >
                     Edit
                 </site-button>
                 <site-button
                         :disabled="!canDelete"
-                        @click="deleteTarget"
+                        @click.native="deleteTarget"
                 >
                     Delete
                 </site-button>

@@ -10,7 +10,6 @@ The typical button used on the site. Has props to allow changing between what ty
                 {'text-only': linkAppearance},
                 {'no-wrap': !wraps}
                 ]"
-            @click="$emit('click')"
             :disabled="disabled"
             :type="type"
     >

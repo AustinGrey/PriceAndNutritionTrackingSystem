@@ -1,7 +1,7 @@
 <template>
     <div class="flex-row-equalfill">
         <site-button
-                @click.prevent="onClick(rowData)"
+                @click.native.prevent.stop="onClick(rowData)"
         >
             <fa-icon :icon="['fas', icon]"></fa-icon>
         </site-button>

@@ -1,7 +1,7 @@
 <template>
     <div :class="{[$options.name]: true}">
         <site-button
-                @click="onClickNote"
+                @click.native="onClickNote"
                 :link-appearance="true"
         >
             <fa-icon :icon="['fas', 'sticky-note']" size="2x"></fa-icon>
@@ -27,7 +27,7 @@
             <option value="servings">servings</option>
         </input-float>
         <site-button
-                @click="$emit('delete')"
+                @click.native="$emit('delete')"
                 :link-appearance="true"
         >
             <fa-icon :icon="['fas', 'minus']" size="2x"></fa-icon>

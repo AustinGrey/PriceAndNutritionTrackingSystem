@@ -117,7 +117,7 @@
                 <h3>Recipe Ingredients</h3>
                 <div id="recipe-components">
                     <recipe-component
-                            v-for="(component, idx) in recipe.components" :key="idx"
+                            v-for="(component, idx) in recipe.components" :key="component.id"
                             :id="component.id"
                             :name="component.name"
                             :recipe_or_ingredient_id="component.recipe_or_ingredient_id"
@@ -147,22 +147,20 @@
             <div class="flex-row-equalfill">
                 <site-button
                         :primary="!canEdit"
-                        @click="create_recipe"
+                        @click.native="create_recipe"
                 >
                     Create New
                 </site-button>
                 <site-button
-                        class="oneline dark"
                         :primary="canEdit"
                         :disabled="!canEdit"
-                        @click="edit_recipe"
+                        @click.native="edit_recipe"
                 >
                     Edit<span v-if="recipe.name"> {{recipe.name}}</span>
                 </site-button>
                 <site-button
-                        class="oneline dark"
                         :disabled="!canDelete"
-                        @click="delete_recipe"
+                        @click.native="delete_recipe"
                 >
                     Delete<span v-if="recipe.name"> {{recipe.name}}</span>
                 </site-button>

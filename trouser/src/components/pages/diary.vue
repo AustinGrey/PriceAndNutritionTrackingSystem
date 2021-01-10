@@ -62,7 +62,7 @@
                 <site-button
                         id="time-text"
                         :link-appearance="true"
-                        @click="changeTime"
+                        @click.native="changeTime"
                 >
                     {{staticVals.text.changeTimeBtn[timeSpecificity]}}
                 </site-button>
@@ -113,7 +113,7 @@
                     <option :value="staticVals.entryType.ONE_OFF_FOOD">One-off Food</option>
                 </input-float>
 
-                <site-button :primary="true" @click="createDiaryFood">Add</site-button>
+                <site-button :primary="true" @click.native="createDiaryFood">Add</site-button>
             </form>
 
             <!-- Shows the tables for picking an existing food to add -->
