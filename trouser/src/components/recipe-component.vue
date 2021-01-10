@@ -12,15 +12,13 @@
                 :id="`${id}:amount`"
                 label="Amount"
                 :extra='{style:"min-width: 0;text-align: right"}'
-                v-model="synced.amount"
-                @input="$emit('update:amount', parseFloat(synced.amount))"
+                v-model="syncedAmount"
         ></input-float>
         <input-float
                 :id="`${id}:unit`"
                 type="select"
                 label="Unit"
-                v-model="synced.unit"
-                @input="$emit('update:unit', synced.unit)"
+                v-model="syncedUnit"
                 :hide-default-option="true"
         >
             <option value="weight">grams</option>
@@ -41,8 +39,7 @@
                 :multiline="true"
                 v-show="hasNote"
                 :extra='{class:{"resizable-vertical":true}}'
-                v-model="synced.note"
-                @input="$emit('update:note', synced.note)"
+                v-model="syncedNote"
         ></input-float>
     </div>
 </template>
@@ -67,7 +64,6 @@
             return {
                 // Internal data storage for user editable properties
                 synced:{
-                    note: '',
                     unit: null,
                     amount: null,
                 },
@@ -77,22 +73,45 @@
         },
         mounted(){
             // Transfer synced props to internal data
-            this.synced.note = this.note || '';
-            this.synced.unit = this.unit;
-            this.synced.amount = this.amount;
+            this.syncedNote = this.note || ''; //@todo is this necessary anymore?
 
             // Do this so that deleting the note text does not immediately hide the note box
-            this.wantsNote = this.synced.note !== '';
+            this.wantsNote = this.syncedNote !== '';
         },
         computed: {
             hasNote() {
-                return this.synced.note !== '' || this.wantsNote;
+                return this.syncedNote !== '' || this.wantsNote;
+            },
+            syncedNote:{
+                get(){
+                    return this.note;
+                },
+                set(value){
+                    this.$emit("update:note", value);
+                }
+            },
+            syncedUnit:{
+                get(){
+                    return this.unit;
+                },
+                set(value){
+                    this.$emit("update:unit", value)
+                }
+            },
+            syncedAmount:{
+                get(){
+                    return this.amount;
+                },
+                set(value){
+                    this.$emit("update:amount", parseFloat(value))
+                }
             }
         },
         methods:{
             onClickNote(){
                 this.wantsNote = !this.wantsNote;
-                this.note = ''
+                this.syncedNote = '';
+
             }
         }
     }

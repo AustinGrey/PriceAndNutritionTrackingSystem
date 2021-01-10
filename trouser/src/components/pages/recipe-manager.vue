@@ -484,7 +484,7 @@
 
                 // Also store a reference to this node so that we can refresh it
                 this.focusedNode = args.node;
-            }
+            },
         }
     }
 </script>
