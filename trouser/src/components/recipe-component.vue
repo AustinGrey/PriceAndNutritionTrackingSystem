@@ -13,7 +13,7 @@
                 label="Amount"
                 :extra='{style:"min-width: 0;text-align: right"}'
                 v-model="syncedAmount"
-        ></input-float>
+        />
         <input-float
                 :id="`${id}:unit`"
                 type="select"
@@ -40,7 +40,7 @@
                 v-show="hasNote"
                 :extra='{class:{"resizable-vertical":true}}'
                 v-model="syncedNote"
-        ></input-float>
+        />
     </div>
 </template>
 
