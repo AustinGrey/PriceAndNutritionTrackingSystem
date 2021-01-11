@@ -71,17 +71,25 @@ $colors: (
 
   menu:(
     background: white,
-    icon: black,
+    icon: $gunmetal,
     icon-active: $blueCrayola,
     icon-hover: white,
     icon-hover-bg: $blueCrayola,
-    border: black,
+    border: $gunmetal,
   ),
 
   checkbox:(
     background: white,
     border: $gunmetal,
     selected-shadow: scale_color($blueCrayola, $alpha:-25%),
+  ),
+
+  float-input:(
+    border: $gunmetal,
+  ),
+
+  float-input-hover: (
+    border: $blueCrayola
   )
 );
 

@@ -189,6 +189,8 @@
 </script>
 
 <style scoped lang="scss">
+    @import "src/assets/css/colors";
+
     .field {
         position: relative;
 
@@ -231,7 +233,7 @@
             --label-spacing: 1.1em;
             background: white;
             box-sizing: border-box;
-            border: 1px solid var(--gunmetal);
+            border: 1px solid c(float-input, border);
             padding: var(--label-spacing) .5em 0;
             transition: all .1s ease-out;
             width: 100%;
@@ -244,7 +246,7 @@
             }
 
             &:hover, &:focus {
-                border-color: var(--shamrock-green);
+                border-color: c(float-input-hover, border);
             }
 
             &:placeholder-shown {
