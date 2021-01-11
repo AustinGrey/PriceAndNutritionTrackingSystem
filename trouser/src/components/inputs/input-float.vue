@@ -17,7 +17,8 @@
                 :disabled="disabled"
                 @keyup="$emit('keyup')"
                 @input="handleInput"
-                ref="input"></textarea>
+                ref="input"
+        />
         <!--        For the select, we publish the selected option as the data-picked_option attribute to aid in styling -->
         <select
                 v-else-if="type==='select'"
@@ -45,7 +46,8 @@
                 :disabled="disabled"
                 @keyup="$emit('keyup')"
                 @input="handleInput"
-                ref="input">
+                ref="input"
+        />
         <label class="field__label" :for="id">{{label}}</label>
     </div>
 </template>
@@ -182,7 +184,7 @@
              * Emits the input event with appropriate data when the value of the input field changes
              */
             handleInput() {
-                this.$emit('input', this.input_mask ? this.input_mask.masked : this.content)
+                this.$emit('input', this.input_mask ? this.input_mask.value : this.content)
             }
         }
     }
