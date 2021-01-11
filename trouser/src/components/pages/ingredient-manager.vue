@@ -81,6 +81,7 @@
                             hint="A sandwich made with melted cheese"
                             :extra='{disabled: true, value:""}'
                             v-model="ingredient.owner"
+                            :disabled="true"
                     />
                 </div>
                 <h3>Nutrition</h3>
