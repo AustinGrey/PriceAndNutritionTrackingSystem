@@ -47,72 +47,75 @@
             />
         </div>
         <div class="header-recipe">
-            <h2>{{recipe.uri ? recipe.name : 'New Recipe'}}</h2>
+            <h2>
+                <input-float
+                        id='name'
+                        :placeholder="recipe.uri ? recipe.name || 'Name' : 'New Recipe'"
+                        hint="Grilled Cheese"
+                        v-model="recipe.name"
+                />
+                <!--{{}}-->
+            </h2>
         </div>
         <div class="recipe">
             <form id="recipe-edit-form" autocomplete="off">
-                <input type="hidden" id="selected_row_node" />
-                <input type="hidden" id="recipe_uri" name="recipe_uri" />
+                <input type="hidden" id="selected_row_node"/>
+                <input type="hidden" id="recipe_uri" name="recipe_uri"/>
 
+                <input-label _for="introduction" content="Introduction" v-show="showAllFields"/>
                 <input-float
                         id='introduction'
-                        label='Introduction'
                         hint="A story about how the grilled cheese came to be"
                         :multiline="true"
                         v-model="recipe.introduction"
+                        v-show="showAllFields"
                 />
 
-                <div class="flex-row-equalfill">
-                    <input-float
-                            id='name'
-                            label='Name'
-                            hint="Grilled Cheese"
-                            v-model="recipe.name"
-                    />
-                    <input-float
-                            id='slug'
-                            label='Slug'
-                            hint="grilled-cheese"
-                            input_mask_name="slug_mask"
-                            v-model="recipe.slug"
-                    />
-                </div>
+                <input-label _for="slug" content="Slug" v-show="showAllFields"/>
+                <input-float
+                        id='slug'
+                        hint="grilled-cheese"
+                        input_mask_name="slug_mask"
+                        v-model="recipe.slug"
+                        v-show="showAllFields"
+                />
 
+                <input-label _for="description" content="Description"/>
                 <input-float
                         id='description'
-                        label='Description'
                         hint="A sandwich made with melted cheese"
                         :multiline="true"
                         v-model="recipe.description"
                 />
 
-                <div class="flex-row-equalfill">
-                    <input-float
-                            id='serves'
-                            label='Serves'
-                            hint="1"
-                            v-model="recipe.serves"
-                    />
-                    <input-float
-                            id='tags'
-                            label='Tags'
-                            hint="tag1,tag2,tag3"
-                            input_mask=tag_mask
-                            :extra='{style:"flex:2"}'
-                            v-model="recipe.tags"
-                    />
-                    <!-- @todo it is unclear what flag is used for, need to add support for it -->
-                    <input-float
-                            id="flag"
-                            type="select"
-                            label="Flag"
-                            v-model="recipe.flag"
-                    >
-                        <option v-for="flag in allowedFlags" :key="flag.name" :value="flag.name">({{flag.char}})
-                            {{flag.name}}
-                        </option>
-                    </input-float>
-                </div>
+                <input-label _for="serves" content="Serves"/>
+                <input-float
+                        id='serves'
+                        hint="1"
+                        v-model="recipe.serves"
+                />
+
+                <input-label _for="tags" content="Tags" v-show="showAllFields" />
+                <input-float
+                        id='tags'
+                        hint="tag1,tag2,tag3"
+                        input_mask=tag_mask
+                        v-model="recipe.tags"
+                        v-show="showAllFields"
+                />
+
+                <!-- @todo it is unclear what flag is used for, need to add support for it -->
+                <input-label _for="flag" content="Flag" v-show="showAllFields"/>
+                <input-float
+                        id="flag"
+                        type="select"
+                        v-model="recipe.flag"
+                        v-show="showAllFields"
+                >
+                    <option v-for="flag in allowedFlags" :key="flag.name" :value="flag.name">({{flag.char}})
+                        {{flag.name}}
+                    </option>
+                </input-float>
 
                 <h3>Ingredients</h3>
                 <div id="recipe-components">
@@ -129,22 +132,36 @@
                     />
                 </div>
 
+                <input-label _for="method" content="Method"/>
                 <input-float
                         id='method'
-                        label='Method'
                         hint="Add cheese to bread, toast."
                         :multiline="true"
                         v-model="recipe.method"
                 />
+
+                <input-label _for="notes" content="Notes" v-show="showAllFields"/>
                 <input-float
                         id='notes'
-                        label='Notes'
                         hint="Can use different cheeses than what is listed. Recipe is flexible."
                         :multiline="true"
                         v-model="recipe.notes"
+                        v-show="showAllFields"
                 />
             </form>
-            <div class="flex-row-equalfill">
+            <div class="form-actions">
+                <input-checkbox
+                        id="showMore"
+                        v-model="showAllFields"
+                        label="Advanced"
+                />
+                <site-button
+                        :disabled="!canDelete"
+                        @click.native="delete_recipe"
+                        v-show="canDelete"
+                >
+                    Delete
+                </site-button>
                 <site-button
                         :primary="!canEdit"
                         @click.native="create_recipe"
@@ -155,15 +172,11 @@
                         :primary="canEdit"
                         :disabled="!canEdit"
                         @click.native="edit_recipe"
+                        v-show="canEdit"
                 >
                     Save
                 </site-button>
-                <site-button
-                        :disabled="!canDelete"
-                        @click.native="delete_recipe"
-                >
-                    Delete
-                </site-button>
+
             </div>
         </div>
     </div>
@@ -179,10 +192,14 @@
 
     import ActionButtonCellRenderer from '@/components/cell-renderers/action-button';
     import SiteButton from "@/components/inputs/site-button";
+    import InputLabel from "@/components/inputs/input-label";
+    import InputCheckbox from "@/components/inputs/input-checkbox";
 
     export default {
         name: "recipe-manager",
         components: {
+            InputCheckbox,
+            InputLabel,
             SiteButton,
             RecipeComponent,
             InputFloat,
@@ -315,6 +332,8 @@
                 },
                 focusedNode: null,
                 allowedFlags: [],
+                // If all form fields should show. Hide the most uncommon fields by default.
+                showAllFields: false
             }
         },
         computed: {
@@ -542,6 +561,24 @@
 
         > .recipe {
             grid-area: recipe;
+            #recipe-edit-form{
+                display: grid;
+                grid-template-columns: max-content 1fr;
+                grid-gap: 0 0.5em;
+                align-items: baseline;
+
+                h3{
+                    grid-column: 1 / span 2;
+                    +*{
+                        grid-column: 1 / span 2;
+                    }
+                }
+            }
+
+            .form-actions{
+                display: flex;
+                justify-content: flex-end;
+            }
         }
 
         ::v-deep {
@@ -552,11 +589,9 @@
 
         #recipe-components {
             display: grid;
-            /*grid-template-columns: 1fr [note-start] 8em 7em 2em [note-end];*/
-            /*A somewhat hacky way to make this align with the 3 way split of fields above it*/
-            grid-template-columns: 2em calc(33% + 1px - 2em) [note-start] calc(33% + 3px) 1fr 2em [note-end];
+            grid-template-columns: 2em 1fr [note-start] calc(33% + 3px) max-content 2em [note-end];
             margin: var(--padding) 1px;
-            align-items: center;
+            align-items: baseline;
 
             ::v-deep .recipe-component .note {
                 grid-column: note-start / note-end

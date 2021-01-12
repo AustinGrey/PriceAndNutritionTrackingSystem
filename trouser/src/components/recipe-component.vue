@@ -1,5 +1,5 @@
 <template>
-    <div :class="{[$options.name]: true}">
+    <div :class="$options.name">
         <site-button
                 @click.native="onClickNote"
                 :link-appearance="true"
@@ -13,15 +13,16 @@
                 label="Amount"
                 :extra='{style:"min-width: 0;text-align: right"}'
                 v-model="syncedAmount"
+                class="amount"
         />
         <input-float
                 :id="`${id}:unit`"
                 type="select"
-                label="Unit"
+                placeholder="Unit"
                 v-model="syncedUnit"
                 :hide-default-option="true"
         >
-            <option value="weight">grams</option>
+            <option value="weight">g</option>
             <option value="servings">servings</option>
         </input-float>
         <site-button
@@ -117,8 +118,21 @@
     }
 </script>
 
-<style>
+<style scoped lang="scss">
     .recipe-component {
         display: contents;
+
+        .amount{
+            position: relative;
+            &::after{
+                content: "";
+                border: 5px solid transparent;
+                border-bottom-color: var(--gunmetal);
+                position: absolute;
+                right: 0;
+                bottom: 0;
+                transform: translateX(50%);
+            }
+        }
     }
 </style>

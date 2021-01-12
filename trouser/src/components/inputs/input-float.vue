@@ -1,17 +1,18 @@
 <template>
     <div
-            class="field"
             :id="id + '-container'"
             v-bind="container_extra"
-            :class="{disabled:disabled}"
+            :class="[$options.name, {disabled:disabled}]"
     >
+        <label class="label" :for="id" v-if="label">{{label}}</label>
+
         <textarea
                 v-if="type==='text' && multiline"
-                class="field__input"
+                class="input-elem"
                 :name="id"
                 :id="id"
                 :type="type"
-                :placeholder="label"
+                :placeholder="placeholder || label"
                 v-bind="extra"
                 v-model="content"
                 :disabled="disabled"
@@ -22,7 +23,7 @@
         <!--        For the select, we publish the selected option as the data-picked_option attribute to aid in styling -->
         <select
                 v-else-if="type==='select'"
-                class="field__input"
+                class="input-elem"
                 :name="id"
                 :id="id"
                 v-bind="extra"
@@ -36,11 +37,11 @@
         </select>
         <input
                 v-else
-                class="field__input"
+                class="input-elem"
                 :name="id"
                 :id="id"
                 :type="type"
-                :placeholder="label"
+                :placeholder="placeholder || label"
                 v-bind="extra"
                 v-model="content"
                 :disabled="disabled"
@@ -48,7 +49,8 @@
                 @input="handleInput"
                 ref="input"
         />
-        <label class="field__label" :for="id">{{label}}</label>
+
+        <p class="hint">{{hint}}</p>
     </div>
 </template>
 
@@ -79,6 +81,10 @@
             },
             // What the floating label should say
             label: {
+                type: String,
+                default: ''
+            },
+            placeholder: {
                 type: String,
                 default: ''
             },
@@ -192,6 +198,61 @@
 
 <style scoped lang="scss">
     @import "src/assets/css/colors";
+
+    .input-float{
+        --transition-speed: 0.5s;
+
+        // Dense left to right helps quick scanning. Looser top/bottom spacing helps organize logically
+        margin: 0.3em 0 0.5em 0;
+
+        display: flex;
+        align-items: baseline;
+
+        position: relative;
+
+        .label{
+            padding-left: 0.3rem;
+        }
+
+        .input-elem{
+            &:not(textarea){
+                border: none;
+                border-bottom: 2px solid black;
+            }
+            background: none;
+            padding: 0.3rem 0.3rem 0 0.3rem;
+
+            // Fill container, which the parent should be in charge of sizing
+            width: 100%;
+            box-sizing: border-box;
+
+            // For inputs with units, we want the text as close to the unit as possible, and units are always on the right
+            //text-align: right;
+
+            &:focus, &:active{
+                border-color: c(float-input-hover, border);
+            }
+
+        }
+
+        .hint{
+            font-size: 0.3rem;
+            position: absolute;
+            bottom: 0;
+            transform: translateY(100%);
+
+            padding: 0.1rem 0.1rem 0.1rem 0.3rem;
+
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+        }
+
+        .input-elem:focus+.hint,
+        .input-elem:active+.hint{
+            opacity: 1;
+        }
+
+    }
 
     .field {
         position: relative;
