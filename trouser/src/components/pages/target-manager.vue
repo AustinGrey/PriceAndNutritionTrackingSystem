@@ -68,14 +68,14 @@
                         @click.native="createTarget"
                         :primary="!canEdit"
                 >
-                    Create New
+                    Save {{target.url ? "Copy" : "New"}}
                 </site-button>
                 <site-button
                         :disabled="!canEdit"
                         :primary="canEdit"
                         @click.native="editTarget"
                 >
-                    Edit
+                    Save
                 </site-button>
                 <site-button
                         :disabled="!canDelete"

@@ -123,11 +123,12 @@
             }
 
             .menu{
+                border-top: none;
+
                 >.nav {
                     flex-direction: column;
                     justify-content: flex-start;
                     height: 100%;
-                    border-top: none;
                     border-right: 1px solid c(menu, border);
 
                     > .nav-item {

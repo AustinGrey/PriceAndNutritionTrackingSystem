@@ -47,7 +47,7 @@
             />
         </div>
         <div class="header-recipe">
-            <h2>Selected Recipe</h2>
+            <h2>{{recipe.uri ? recipe.name : 'New Recipe'}}</h2>
         </div>
         <div class="recipe">
             <form id="recipe-edit-form" autocomplete="off">
@@ -114,7 +114,7 @@
                     </input-float>
                 </div>
 
-                <h3>Recipe Ingredients</h3>
+                <h3>Ingredients</h3>
                 <div id="recipe-components">
                     <recipe-component
                             v-for="(component, idx) in recipe.components" :key="component.id"
@@ -149,20 +149,20 @@
                         :primary="!canEdit"
                         @click.native="create_recipe"
                 >
-                    Create New
+                    Save {{recipe.uri ? "Copy" : "New"}}
                 </site-button>
                 <site-button
                         :primary="canEdit"
                         :disabled="!canEdit"
                         @click.native="edit_recipe"
                 >
-                    Edit<span v-if="recipe.name"> {{recipe.name}}</span>
+                    Save
                 </site-button>
                 <site-button
                         :disabled="!canDelete"
                         @click.native="delete_recipe"
                 >
-                    Delete<span v-if="recipe.name"> {{recipe.name}}</span>
+                    Delete
                 </site-button>
             </div>
         </div>

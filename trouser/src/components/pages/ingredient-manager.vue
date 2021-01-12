@@ -24,7 +24,7 @@
             />
         </div>
         <div class="header">
-            <h2>Information</h2>
+            <h2>{{ingredient.uri ? ingredient.name : "New Ingredient"}}</h2>
         </div>
         <div class="ingredient">
             <!-- A form to edit the given ingredient -->
@@ -159,7 +159,7 @@
                         :primary="!canEdit"
                         @click.native="createIngredient"
                 >
-                    {{canEdit ? "Copy New" : "Create New"}}
+                    Save {{ingredient.uri ? "Copy" : "New"}}
                 </site-button>
                 <site-button
                         :primary="canEdit"
@@ -167,14 +167,14 @@
                         @click.native="editIngredient"
                         id="edit_desc"
                 >
-                    Edit<span v-if="shortName"> {{shortName}}</span>
+                    Save
                 </site-button>
                 <site-button
                         :disabled="!canDelete"
                         @click.native="deleteIngredient"
                         id="delete_desc"
                 >
-                    Delete<span v-if="shortName"> {{shortName}}</span>
+                    Delete
                 </site-button>
             </div>
         </div>
