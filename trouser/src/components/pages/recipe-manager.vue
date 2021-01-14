@@ -505,8 +505,22 @@
                 this.focusedNode = args.node;
             },
             refreshTables(){
-                this.recipeGrid.gridOptions.api.refreshInfiniteCache();
-                this.componentsGrid.gridOptions.api.refreshInfiniteCache();
+                // For some reason, refreshInfiniteCache only works if some blocks are already loaded
+                // If no results exist in the table (say because they all got filtered), then refreshInfiniteCache won't
+                // work as there are no blocks to mark dirty. In that case we purge instead
+                // @todo extract this to some utility function
+                if(Object.keys(this.recipeGrid.gridOptions.api.getCacheBlockState()).length){
+                    this.recipeGrid.gridOptions.api.refreshInfiniteCache();
+                }
+                else {
+                    this.recipeGrid.gridOptions.api.purgeInfiniteCache();
+                }
+                if(Object.keys(this.componentsGrid.gridOptions.api.getCacheBlockState()).length){
+                    this.componentsGrid.gridOptions.api.refreshInfiniteCache();
+                }
+                else {
+                    this.componentsGrid.gridOptions.api.purgeInfiniteCache();
+                }
             },
         }
     }
