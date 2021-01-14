@@ -38,9 +38,6 @@
                     :datasource="componentsGrid.datasource"
             />
         </div>
-        <div class="header-recipe">
-            <h2>{{recipe.uri ? recipe.name : 'New Recipe'}}</h2>
-        </div>
         <div class="recipe">
             <form id="recipe-edit-form" autocomplete="off">
                 <input type="hidden" id="selected_row_node" />
@@ -49,7 +46,7 @@
                 <input-float
                         id='introduction'
                         label='Introduction'
-                        hint="A story about how the grilled cheese came to be"
+                        hint="Some food bloggers life story..."
                         :multiline="true"
                         v-model="recipe.introduction"
                         v-show="showAllFields"
@@ -80,7 +77,7 @@
                         v-model="recipe.description"
                 />
 
-                <div class="flex-row-equalfill">
+                <div class="flex-row-equalfill" style="align-items: baseline">
                     <input-float
                             id='serves'
                             label='Serves'
@@ -124,6 +121,7 @@
                             :note.sync="component.note"
                             :unit.sync="component.unit"
                             :amount.sync="component.amount"
+                            :include-labels="false"
                             @delete="recipe.components.splice(idx, 1)"
                     />
                 </div>
@@ -584,7 +582,7 @@
                 display: grid;
                 grid-template-columns: [note-start] 1em 1fr [note-end] 5em 6em;
                 margin: var(--padding) 0 var(--padding) var(--padding);
-                align-items: center;
+                align-items: baseline;
 
                 ::v-deep .recipe-component {
                     .name{

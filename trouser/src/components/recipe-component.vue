@@ -17,14 +17,14 @@
         </site-button>
         <input-float
                 :id="`${id}:amount`"
-                label="Amount"
+                :label='includeLabels ? "Amount" : ""'
                 :extra='{style:"min-width: 0;text-align: right"}'
                 v-model="syncedAmount"
         />
         <input-float
                 :id="`${id}:unit`"
                 type="select"
-                label="Unit"
+                :label='includeLabels ? "Unit" : ""'
                 v-model="syncedUnit"
                 :hide-default-option="true"
         >
@@ -35,7 +35,7 @@
         <input-float
                 :id="`${id}:note`"
                 class="note"
-                label='Note'
+                :label='includeLabels ? "Note" : ""'
                 hint="Information about this specific ingredient in this specific recipe"
                 :multiline="true"
                 v-show="hasNote"
@@ -60,6 +60,10 @@
             type: String,
             recipe_or_ingredient_id: Number,
             id: Number,
+            includeLabels: {
+                type: Boolean,
+                default: true
+            }
         },
         data() {
             return {

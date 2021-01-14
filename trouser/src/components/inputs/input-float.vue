@@ -1,17 +1,17 @@
 <template>
     <div
-            class="field"
             :id="id + '-container'"
             v-bind="container_extra"
-            :class="{disabled:disabled}"
+            :class="[$options.name, {disabled:disabled, empty:!value}]"
     >
+        <label class="field__label" :for="id" v-if="label">{{label}}</label>
         <textarea
                 v-if="type==='text' && multiline"
                 class="field__input"
                 :name="id"
                 :id="id"
                 :type="type"
-                :placeholder="label"
+                :placeholder="placeholder"
                 v-bind="extra"
                 v-model="content"
                 :disabled="disabled"
@@ -40,7 +40,7 @@
                 :name="id"
                 :id="id"
                 :type="type"
-                :placeholder="label"
+                :placeholder="placeholder"
                 v-bind="extra"
                 v-model="content"
                 :disabled="disabled"
@@ -48,7 +48,8 @@
                 @input="handleInput"
                 ref="input"
         />
-        <label class="field__label" :for="id">{{label}}</label>
+
+        <p class="hint" v-if="hint">{{hint}}</p>
     </div>
 </template>
 
@@ -79,6 +80,11 @@
             },
             // What the floating label should say
             label: {
+                type: String,
+                default: ''
+            },
+            // What the inside of the input should say if empty
+            placeholder: {
                 type: String,
                 default: ''
             },
@@ -193,35 +199,20 @@
 <style scoped lang="scss">
     @import "src/assets/css/colors";
 
-    .field {
+    .input-float {
         position: relative;
-
-        /*
-        for inputs and text areas, we know it's empty when the placeholder is shown
-        for selects, it's when the specially crafted data tag is empty
-
-        In this case we make the label disappear and lower, so that it 'floats up and in' when needed
-        */
-        > .field__input:placeholder-shown + .field__label,
-        > select.field__input[data-picked_option=""] + .field__label {
-            opacity: 0;
-            transform: translateY(1px);
-        }
-
+        --transition-speed: 0.5s;
 
         > .field__label {
-            color: #919293;
+            color: c(float-input, label);
             display: block;
             box-sizing: border-box;
             font-size: .8em;
-            line-height: 1;
-            opacity: 1;
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
             padding: .5em 0.6rem;
             pointer-events: none;
-            position: absolute;
             top: 0;
             text-align: left;
             transform: none;
@@ -236,7 +227,7 @@
             background: white;
             box-sizing: border-box;
             border: 1px solid c(float-input, border);
-            padding: var(--label-spacing) .5em 0;
+            padding: calc(var(--label-spacing) / 2) .5em calc(var(--label-spacing) / 2);
             transition: all .1s ease-out;
             width: 100%;
             resize: vertical;
@@ -253,21 +244,17 @@
 
             &:placeholder-shown {
                 /* Padding when detected empty */
-                padding: calc(var(--label-spacing) / 2) .5em calc(var(--label-spacing) / 2);
+
             }
         }
 
         /* For some reason select elements are 2 px wider than inputs, normalize by going 50/50 */
         > select.field__input {
-            padding: calc(var(--label-spacing) - 2px) .5em 0;
+            padding: calc(var(--label-spacing) / 2 - 1px) .5em calc(var(--label-spacing) / 2 - 1px);
 
             &[data-picked_option=""] {
-                padding: calc(var(--label-spacing) / 2 - 1px) .5em calc(var(--label-spacing) / 2 - 1px);
                 /* Any option with a value of "" will be considered unpicked, and thus should look like the placeholder */
                 color: grey;
-            }
-            &:not([data-has-label]){
-                padding: calc(var(--label-spacing) / 2 - 1px) .5em calc(var(--label-spacing) / 2 - 1px);
             }
         }
 
@@ -285,6 +272,24 @@
                 border-color: rgba(0,0,0,0.1);
                 &::placeholder{
                     color: black;
+                }
+            }
+        }
+
+        .hint{
+            font-size: 0.8rem;
+            color: #919293;
+            opacity: 0;
+            padding: 0.5em 0.6rem;
+            transition: opacity var(--transition-speed);
+        }
+
+        &.empty{
+            .field__input:active,
+            .field__input:hover,
+            .field__input:focus{
+                +.hint{
+                    opacity: 1;
                 }
             }
         }
