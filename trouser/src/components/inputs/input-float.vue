@@ -50,7 +50,7 @@
                 ref="input"
         />
 
-        <p class="hint">{{hint}}</p>
+        <p class="hint" v-show="!value">{{hint}}</p>
     </div>
 </template>
 
@@ -214,6 +214,10 @@
             padding-left: 0.3rem;
         }
 
+        textarea.input-elem{
+            border-radius: var(--border-radius);
+        }
+
         .input-elem{
             &:not(textarea){
                 border: none;
@@ -221,6 +225,12 @@
             }
             background: none;
             padding: 0.3rem 0.3rem 0 0.3rem;
+
+            // Use consistent font. Not on inputs though because that changes the baseline for some reason and I can't find out why.
+            // @todo use consistent font without ruining consistent baseline
+            &:not(input){
+                font-family: var(--font-family-content);
+            }
 
             // Fill container, which the parent should be in charge of sizing
             width: 100%;
@@ -231,6 +241,9 @@
 
             &:focus, &:active{
                 border-color: c(float-input-hover, border);
+                +.hint{
+                    opacity: 1;
+                }
             }
 
         }
@@ -245,11 +258,6 @@
 
             opacity: 0;
             transition: opacity var(--transition-speed);
-        }
-
-        .input-elem:focus+.hint,
-        .input-elem:active+.hint{
-            opacity: 1;
         }
 
     }

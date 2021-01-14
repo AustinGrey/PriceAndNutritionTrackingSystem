@@ -1,16 +1,16 @@
 <template>
     <div :class="$options.name">
         <site-button
-                @click.native="onClickNote"
+                :id="`${id}:name`"
                 :link-appearance="true"
+                @click.native="onClickNote"
         >
-            <fa-icon :icon="['fas', 'sticky-note']" size="2x"></fa-icon>
+            {{name}}<span v-show="wantsNote">*</span>
         </site-button>
-        <label id="name">{{name}}</label>
 
         <input-float
                 :id="`${id}:amount`"
-                label="Amount"
+                placeholder="Amount"
                 :extra='{style:"min-width: 0;text-align: right"}'
                 v-model="syncedAmount"
                 class="amount"
@@ -35,7 +35,7 @@
         <input-float
                 :id="`${id}:note`"
                 class="note"
-                label='Note'
+                placeholder='Note'
                 hint="Information about this specific ingredient in this specific recipe"
                 :multiline="true"
                 v-show="hasNote"

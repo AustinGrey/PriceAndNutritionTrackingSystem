@@ -1,11 +1,11 @@
 <template>
     <div id="recipe-manager">
         <div class="header-all-recipes flex-row-between flex-gap-regular">
-            <h2>All Recipes</h2>
+            <h2>Foods</h2>
             <input-float
                     id='recipe_filter'
-                    label='Search'
-                    @keyup="recipeGrid.gridOptions.api.refreshInfiniteCache()"
+                    placeholder='Search'
+                    v-model="searchTerm"
             />
         </div>
         <div class="all-recipes resizable-vertical">
@@ -22,14 +22,6 @@
                     :paginationAutoPageSize="recipeGrid.paginationAutoPageSize"
                     :datasource="recipeGrid.datasource"
                     @row-selected="onRecipeRowSelected"
-            />
-        </div>
-        <div class="header-all-ingredients flex-row-between flex-gap-regular">
-            <h2>All Ingredients</h2>
-            <input-float
-                    id='ingredient_filter'
-                    label='Search'
-                    @keyup="componentsGrid.gridOptions.api.refreshInfiniteCache()"
             />
         </div>
         <div class="all-ingredients resizable-vertical">
@@ -54,7 +46,6 @@
                         hint="Grilled Cheese"
                         v-model="recipe.name"
                 />
-                <!--{{}}-->
             </h2>
         </div>
         <div class="recipe">
@@ -117,8 +108,8 @@
                     </option>
                 </input-float>
 
-                <h3>Ingredients</h3>
-                <div id="recipe-components">
+<!--                <h3>Ingredients</h3>-->
+                <div v-if="recipe.components.length" id="recipe-components">
                     <recipe-component
                             v-for="(component, idx) in recipe.components" :key="component.id"
                             :id="component.id"
@@ -131,6 +122,7 @@
                             @delete="recipe.components.splice(idx, 1)"
                     />
                 </div>
+                <p v-else class="no-components-warning">Recipe has no ingredients</p>
 
                 <input-label _for="method" content="Method"/>
                 <input-float
@@ -233,7 +225,7 @@
                             maxWidth: 25,
                             pinned: "left",
                         },
-                        {headerName: "Name", field: "name", pinned: "left", width: 125},
+                        {headerName: "Recipe", field: "name", pinned: "left", width: 125},
                         {headerName: "Description", field: "description"},
                         {headerName: "Serves", field: "serves", maxWidth: 65}, // Just the size of the header and no more
                         {headerName: "Notes", field: "notes"},
@@ -251,7 +243,7 @@
                     // Set up the grid to paginate using the server side API
                     datasource: {
                         getRows: async params => {
-                            params.searchKey = document.querySelector('#recipe_filter').value;
+                            params.searchKey = this.searchTerm;
                             let response = await this.pants.get_recipes(params);
 
                             if (response.ok) {
@@ -288,7 +280,7 @@
                             maxWidth: 25,
                             pinned: "left",
                         },
-                        {headerName: "Name", field: "name", pinned: "left", width: 125},
+                        {headerName: "Ingredient", field: "name", pinned: "left", width: 125},
                         {headerName: "Description", field: "description"},
                         {headerName: "Serving", field: "serving", maxWidth: 65},
                         {headerName: "Notes", field: "notes"},
@@ -305,7 +297,7 @@
                     // Set up the grid to paginate using the server side API
                     datasource: {
                         getRows: async params => {
-                            params.searchKey = document.querySelector('#ingredient_filter').value;
+                            params.searchKey = this.searchTerm;
                             let response = await this.pants.get_ingredients(params);
 
                             if (response.ok) {
@@ -333,7 +325,14 @@
                 focusedNode: null,
                 allowedFlags: [],
                 // If all form fields should show. Hide the most uncommon fields by default.
-                showAllFields: false
+                showAllFields: false,
+                // What term will be used to search for recipes and ingredients
+                searchTerm: "",
+            }
+        },
+        watch:{
+            searchTerm(){
+                this.refreshTables();
             }
         },
         computed: {
@@ -504,6 +503,10 @@
                 // Also store a reference to this node so that we can refresh it
                 this.focusedNode = args.node;
             },
+            refreshTables(){
+                this.recipeGrid.gridOptions.api.refreshInfiniteCache();
+                this.componentsGrid.gridOptions.api.refreshInfiniteCache();
+            }
         }
     }
 </script>
@@ -567,11 +570,37 @@
                 grid-gap: 0 0.5em;
                 align-items: baseline;
 
-                h3{
+                #recipe-components {
                     grid-column: 1 / span 2;
-                    +*{
-                        grid-column: 1 / span 2;
+
+                    display: grid;
+                    grid-template-columns: 1fr [note-start] 5em 6em 2em [note-end];
+                    margin: var(--padding) 1em;
+                    align-items: baseline;
+
+                    ::v-deep .recipe-component {
+                        .site-button {
+                            &:first-of-type{
+                                text-align: left;
+                            }
+                            &:not(:first-of-type) {
+                                align-self: center;
+                            }
+                            &:last-of-type{
+                                margin: 0 0.5em;
+                            }
+                        }
+
+                        .note {
+                            grid-column: note-start / note-end
+                        }
                     }
+                }
+                .no-components-warning{
+                    grid-column: 1 / span 2;
+                    color: grey;
+                    font-size: 0.8em;
+                    padding: 1em;
                 }
             }
 
@@ -584,17 +613,6 @@
         ::v-deep {
             .field, button {
                 margin: 1px;
-            }
-        }
-
-        #recipe-components {
-            display: grid;
-            grid-template-columns: 2em 1fr [note-start] calc(33% + 3px) max-content 2em [note-end];
-            margin: var(--padding) 1px;
-            align-items: baseline;
-
-            ::v-deep .recipe-component .note {
-                grid-column: note-start / note-end
             }
         }
     }
