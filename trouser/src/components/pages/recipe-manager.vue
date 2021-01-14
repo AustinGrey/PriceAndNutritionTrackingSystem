@@ -568,7 +568,7 @@
 
             #recipe-components {
                 display: grid;
-                grid-template-columns: 1em 1fr [note-start] 5em 6em [note-end];
+                grid-template-columns: [note-start] 1em 1fr [note-end] 5em 6em;
                 margin: var(--padding) 0 var(--padding) var(--padding);
                 align-items: center;
 
