@@ -1,11 +1,11 @@
 <template>
     <div id="recipe-manager">
         <div class="header-all-recipes flex-row-between flex-gap-regular">
-            <h2>All Recipes</h2>
+            <h2>Food</h2>
             <input-float
                     id='recipe_filter'
                     label='Search'
-                    @keyup="recipeGrid.gridOptions.api.refreshInfiniteCache()"
+                    v-model="searchTerm"
             />
         </div>
         <div class="all-recipes resizable-vertical">
@@ -22,14 +22,6 @@
                     :paginationAutoPageSize="recipeGrid.paginationAutoPageSize"
                     :datasource="recipeGrid.datasource"
                     @row-selected="onRecipeRowSelected"
-            />
-        </div>
-        <div class="header-all-ingredients flex-row-between flex-gap-regular">
-            <h2>All Ingredients</h2>
-            <input-float
-                    id='ingredient_filter'
-                    label='Search'
-                    @keyup="componentsGrid.gridOptions.api.refreshInfiniteCache()"
             />
         </div>
         <div class="all-ingredients resizable-vertical">
@@ -60,6 +52,7 @@
                         hint="A story about how the grilled cheese came to be"
                         :multiline="true"
                         v-model="recipe.introduction"
+                        v-show="showAllFields"
                 />
 
                 <div class="flex-row-equalfill">
@@ -75,6 +68,7 @@
                             hint="grilled-cheese"
                             input_mask_name="slug_mask"
                             v-model="recipe.slug"
+                            v-show="showAllFields"
                     />
                 </div>
 
@@ -100,6 +94,7 @@
                             input_mask=tag_mask
                             :extra='{style:"flex:2"}'
                             v-model="recipe.tags"
+                            v-show="showAllFields"
                     />
                     <!-- @todo it is unclear what flag is used for, need to add support for it -->
                     <input-float
@@ -107,6 +102,7 @@
                             type="select"
                             label="Flag"
                             v-model="recipe.flag"
+                            v-show="showAllFields"
                     >
                         <option v-for="flag in allowedFlags" :key="flag.name" :value="flag.name">({{flag.char}})
                             {{flag.name}}
@@ -114,8 +110,11 @@
                     </input-float>
                 </div>
 
-                <h3>Ingredients</h3>
-                <div id="recipe-components">
+<!--                <h3>Ingredients</h3>-->
+                <div
+                        id="recipe-components"
+                        v-if="recipe.components.length"
+                >
                     <recipe-component
                             v-for="(component, idx) in recipe.components" :key="component.id"
                             :id="component.id"
@@ -128,6 +127,7 @@
                             @delete="recipe.components.splice(idx, 1)"
                     />
                 </div>
+                <p v-else class="no-components-warning">Recipe has no ingredients</p>
 
                 <input-float
                         id='method'
@@ -142,9 +142,22 @@
                         hint="Can use different cheeses than what is listed. Recipe is flexible."
                         :multiline="true"
                         v-model="recipe.notes"
+                        v-show="showAllFields"
                 />
             </form>
-            <div class="flex-row-equalfill">
+            <div class="form-actions">
+                <input-checkbox
+                        id="showMore"
+                        v-model="showAllFields"
+                        label="Advanced"
+                />
+                <site-button
+                        :disabled="!canDelete"
+                        v-show="canDelete && showAllFields"
+                        @click.native="delete_recipe"
+                >
+                    Delete
+                </site-button>
                 <site-button
                         :primary="!canEdit"
                         @click.native="create_recipe"
@@ -154,15 +167,10 @@
                 <site-button
                         :primary="canEdit"
                         :disabled="!canEdit"
+                        v-show="canEdit"
                         @click.native="edit_recipe"
                 >
                     Save
-                </site-button>
-                <site-button
-                        :disabled="!canDelete"
-                        @click.native="delete_recipe"
-                >
-                    Delete
                 </site-button>
             </div>
         </div>
@@ -179,10 +187,12 @@
 
     import ActionButtonCellRenderer from '@/components/cell-renderers/action-button';
     import SiteButton from "@/components/inputs/site-button";
+    import InputCheckbox from "@/components/inputs/input-checkbox";
 
     export default {
         name: "recipe-manager",
         components: {
+            InputCheckbox,
             SiteButton,
             RecipeComponent,
             InputFloat,
@@ -216,7 +226,7 @@
                             maxWidth: 25,
                             pinned: "left",
                         },
-                        {headerName: "Name", field: "name", pinned: "left", width: 125},
+                        {headerName: "Recipe", field: "name", pinned: "left", width: 125},
                         {headerName: "Description", field: "description"},
                         {headerName: "Serves", field: "serves", maxWidth: 65}, // Just the size of the header and no more
                         {headerName: "Notes", field: "notes"},
@@ -234,7 +244,7 @@
                     // Set up the grid to paginate using the server side API
                     datasource: {
                         getRows: async params => {
-                            params.searchKey = document.querySelector('#recipe_filter').value;
+                            params.searchKey = this.searchTerm;
                             let response = await this.pants.get_recipes(params);
 
                             if (response.ok) {
@@ -271,7 +281,7 @@
                             maxWidth: 25,
                             pinned: "left",
                         },
-                        {headerName: "Name", field: "name", pinned: "left", width: 125},
+                        {headerName: "Ingredient", field: "name", pinned: "left", width: 125},
                         {headerName: "Description", field: "description"},
                         {headerName: "Serving", field: "serving", maxWidth: 65},
                         {headerName: "Notes", field: "notes"},
@@ -288,7 +298,7 @@
                     // Set up the grid to paginate using the server side API
                     datasource: {
                         getRows: async params => {
-                            params.searchKey = document.querySelector('#ingredient_filter').value;
+                            params.searchKey = this.searchTerm;
                             let response = await this.pants.get_ingredients(params);
 
                             if (response.ok) {
@@ -315,6 +325,15 @@
                 },
                 focusedNode: null,
                 allowedFlags: [],
+                // If all form fields should show. Hide the most uncommon fields by default.
+                showAllFields: false,
+                // What term will be used to search for recipes and ingredients
+                searchTerm: "",
+            }
+        },
+        watch:{
+            searchTerm(){
+                this.refreshTables();
             }
         },
         computed: {
@@ -485,6 +504,10 @@
                 // Also store a reference to this node so that we can refresh it
                 this.focusedNode = args.node;
             },
+            refreshTables(){
+                this.recipeGrid.gridOptions.api.refreshInfiniteCache();
+                this.componentsGrid.gridOptions.api.refreshInfiniteCache();
+            },
         }
     }
 </script>
@@ -542,24 +565,37 @@
 
         > .recipe {
             grid-area: recipe;
+
+            #recipe-components {
+                display: grid;
+                grid-template-columns: 1em 1fr [note-start] 5em 6em [note-end];
+                margin: var(--padding) 0 var(--padding) var(--padding);
+                align-items: center;
+
+                ::v-deep .recipe-component {
+                    .name{
+                        padding-left: 1em;
+                    }
+                    .note {
+                        grid-column: note-start / note-end
+                    }
+                }
+            }
+
+            .no-components-warning{
+                color: grey;
+                font-size: 0.8em;
+                padding: 1em;
+            }
+            .form-actions{
+                display: flex;
+                justify-content: flex-end;
+            }
         }
 
         ::v-deep {
             .field, button {
                 margin: 1px;
-            }
-        }
-
-        #recipe-components {
-            display: grid;
-            /*grid-template-columns: 1fr [note-start] 8em 7em 2em [note-end];*/
-            /*A somewhat hacky way to make this align with the 3 way split of fields above it*/
-            grid-template-columns: 2em calc(33% + 1px - 2em) [note-start] calc(33% + 3px) 1fr 2em [note-end];
-            margin: var(--padding) 1px;
-            align-items: center;
-
-            ::v-deep .recipe-component .note {
-                grid-column: note-start / note-end
             }
         }
     }

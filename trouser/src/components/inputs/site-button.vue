@@ -88,6 +88,8 @@ The typical button used on the site. Has props to allow changing between what ty
             padding: 0;
             color: c(button-text-only, font);
             background: none;
+            appearance: none;
+            text-align: left;
 
             &:hover {
                 color: c(button-text-only-hover, font);

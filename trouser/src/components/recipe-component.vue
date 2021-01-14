@@ -1,13 +1,20 @@
 <template>
-    <div :class="{[$options.name]: true}">
+    <div :class="$options.name">
         <site-button
+                @click.native="$emit('delete')"
+                :link-appearance="true"
+                class="delete"
+        >
+            <fa-icon :icon="['fas', 'minus']"></fa-icon>
+        </site-button>
+        <site-button
+                :id="`${id}:name`"
                 @click.native="onClickNote"
                 :link-appearance="true"
+                class="name"
         >
-            <fa-icon :icon="['fas', 'sticky-note']" size="2x"></fa-icon>
+            {{name}}<span v-show="wantsNote">*</span>
         </site-button>
-        <label id="name">{{name}}</label>
-
         <input-float
                 :id="`${id}:amount`"
                 label="Amount"
@@ -21,15 +28,9 @@
                 v-model="syncedUnit"
                 :hide-default-option="true"
         >
-            <option value="weight">grams</option>
-            <option value="servings">servings</option>
+            <option value="weight">g</option>
+            <option value="servings">serving</option>
         </input-float>
-        <site-button
-                @click.native="$emit('delete')"
-                :link-appearance="true"
-        >
-            <fa-icon :icon="['fas', 'minus']" size="2x"></fa-icon>
-        </site-button>
 
         <input-float
                 :id="`${id}:note`"
@@ -117,7 +118,7 @@
     }
 </script>
 
-<style>
+<style scoped lang="scss">
     .recipe-component {
         display: contents;
     }
