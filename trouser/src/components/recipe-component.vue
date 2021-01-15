@@ -17,12 +17,14 @@
         </site-button>
         <input-float
                 :id="`${id}:amount`"
+                class="amount"
                 :label='includeLabels ? "Amount" : ""'
                 :extra='{style:"min-width: 0;text-align: right"}'
                 v-model="syncedAmount"
         />
         <input-float
                 :id="`${id}:unit`"
+                class="unit"
                 type="select"
                 :label='includeLabels ? "Unit" : ""'
                 v-model="syncedUnit"
@@ -54,7 +56,10 @@
         components: {SiteButton, InputFloat},
         props: {
             name: String,
-            note: String,
+            note: {
+                type:String,
+                default: ''
+            },
             unit: String, // one of 'servings' or 'weight'
             amount: Number,
             type: String,
@@ -125,5 +130,16 @@
 <style scoped lang="scss">
     .recipe-component {
         display: contents;
+        .amount ::v-deep .field__input{
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right-color: transparent;
+        }
+        .unit ::v-deep .field__input{
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-left-style: dashed;
+            border-left-color: lightgrey;
+        }
     }
 </style>

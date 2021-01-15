@@ -579,17 +579,51 @@
             grid-area: recipe;
 
             #recipe-components {
+                font-size: 12px;
                 display: grid;
                 grid-template-columns: [note-start] 1em 1fr [note-end] 5em 6em;
                 margin: var(--padding) 0 var(--padding) var(--padding);
-                align-items: baseline;
+                align-items: center;
 
                 ::v-deep .recipe-component {
+                    .delete{
+                        grid-column: note-start;
+                    }
                     .name{
                         padding-left: 1em;
                     }
                     .note {
                         grid-column: note-start / note-end
+                    }
+                    .amount,
+                    .unit{
+                        // Make them fill the height if the ingredient name were to wrap due to length
+                        align-self: stretch;
+                        .field__input{
+                            height: 100%;
+                        }
+                    }
+                    &:not(:first-child){
+                        .amount .field__input{
+                            border-top-left-radius: 0;
+                            border-top-color: lightgrey;
+                            border-top-style: dashed;
+                        }
+                        .unit .field__input{
+                            border-top-right-radius: 0;
+                            border-top-color: lightgrey;
+                            border-top-style: dashed;
+                        }
+                    }
+                    &:not(:last-child){
+                        .amount .field__input{
+                            border-bottom-left-radius: 0;
+                            border-bottom-color: transparent;
+                        }
+                        .unit .field__input{
+                            border-bottom-right-radius: 0;
+                            border-bottom-color: transparent;
+                        }
                     }
                 }
             }
@@ -621,6 +655,16 @@
                     "all-ingredients recipe" 1fr
                     / 1fr 30em;
             gap: 0 var(--padding);
+        }
+    }
+
+    @include breakpoint-from(sm){
+        #recipe-manager{
+            >.recipe{
+                #recipe-components{
+                    font-size: 16px;
+                }
+            }
         }
     }
 </style>
