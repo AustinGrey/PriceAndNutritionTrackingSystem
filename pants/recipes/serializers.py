@@ -11,6 +11,16 @@ class ComponentSerializer(serializers.ModelSerializer):
    Detail/Push (etc) serialiser for Recipe - includes nested Components
    """
    name = serializers.ReadOnlyField()
+   # Return the nutrition data of the component to aid in real time calculations in the front end (e.g. showing changes to grams per serving)
+   nutrition_data = serializers.SerializerMethodField()
+
+   def get_nutrition_data(self, component):
+      if component.of_ingredient:
+         return component.of_ingredient.nutrition_data
+      if component.of_recipe:
+         return component.of_recipe.nutrition_data
+      return None
+
    class Meta:
       model = Component
       exclude = ['in_recipe'] # Redundant - only accessible nested within its recipe

@@ -79,12 +79,6 @@
 
                 <div class="flex-row-equalfill" style="align-items: baseline">
                     <input-float
-                            id='serves'
-                            label='Serves'
-                            hint="1"
-                            v-model="recipe.serves"
-                    />
-                    <input-float
                             id='tags'
                             label='Tags'
                             hint="tag1,tag2,tag3"
@@ -122,8 +116,28 @@
                             :unit.sync="component.unit"
                             :amount.sync="component.amount"
                             :include-labels="false"
+                            :class="{first: idx === 0, last: idx === recipe.components.length - 1}"
                             @delete="recipe.components.splice(idx, 1)"
                     />
+                    <input-float
+                            id='serves'
+                            class="total-servings"
+                            label='Total Servings'
+                            hint="1"
+                            v-model="recipe.serves"
+                    />
+                    <input-float
+                            id="grams-per-serving"
+                            class="grams-per-serving"
+                            :disabled="true"
+                            :value="recipe_gramsPerServing"
+                        />
+                    <input-float
+                            id="grams-per-serving-unit"
+                            class="grams-per-serving-unit"
+                            :disabled="true"
+                            value="g/srv"
+                        />
                 </div>
                 <p v-else class="no-components-warning">Recipe has no ingredients</p>
 
@@ -340,6 +354,9 @@
             },
             canDelete() {
                 return this.focusedNode != null;
+            },
+            recipe_gramsPerServing(){
+                return this.recipe.components.reduce((total, component)=>(component.unit === "weight" ? component.amount : component.nutrition_data.grams_serve * component.amount) || 0);
             }
         },
         mounted() {
@@ -381,8 +398,9 @@
              * @param {number|string} amount how much of the component in units
              * @param {string} unit what unit the amount is in. Should be "weight" for grams, or "servings" for servings
              * @param {string} note any additional notes
+             * @param {object} nutrition_data the nutritional data for this component
              */
-            add_component(type, id, recipe_or_ingredient_id, name, amount, unit, note) {
+            add_component(type, id, recipe_or_ingredient_id, name, amount, unit, note, nutrition_data) {
                 this.recipe.components.push({
                     type: type,
                     id: id,
@@ -390,7 +408,8 @@
                     name: name,
                     amount: parseFloat(amount) || 0,
                     unit: unit,
-                    note: note
+                    note: note,
+                    nutrition_data: nutrition_data
                 });
             },
             /**
@@ -489,7 +508,8 @@
                                 component.name,
                                 component.servings || component.weight,
                                 component.servings == null ? "weight" : "servings",
-                                component.note
+                                component.note,
+                                component.nutrition_data
                             );
                         })
                     })
@@ -581,7 +601,7 @@
             #recipe-components {
                 font-size: 12px;
                 display: grid;
-                grid-template-columns: [note-start] 1em 1fr [note-end] 5em 6em;
+                grid-template-columns: [note-start] 1em [name-start] 1fr [note-end] 5em 6em;
                 margin: var(--padding) 0 var(--padding) var(--padding);
                 align-items: center;
 
@@ -603,7 +623,7 @@
                             height: 100%;
                         }
                     }
-                    &:not(:first-child){
+                    &:not(.first){
                         .amount .field__input{
                             border-top-left-radius: 0;
                             border-top-color: lightgrey;
@@ -615,7 +635,7 @@
                             border-top-style: dashed;
                         }
                     }
-                    &:not(:last-child){
+                    &:not(.last){
                         .amount .field__input{
                             border-bottom-left-radius: 0;
                             border-bottom-color: transparent;
@@ -625,6 +645,24 @@
                             border-bottom-color: transparent;
                         }
                     }
+                }
+
+                .total-servings{
+                    grid-column: name-start / note-end;
+                    max-width: 7em;
+                    margin-left: 1em;
+                }
+
+                .grams-per-serving ::v-deep .field__input{
+                    border-top-right-radius: 0;
+                    border-bottom-right-radius: 0;
+                    border-right-color: transparent;
+                }
+                .grams-per-serving-unit ::v-deep .field__input{
+                    border-top-left-radius: 0;
+                    border-bottom-left-radius: 0;
+                    border-left-style: dashed;
+                    border-left-color: lightgrey;
                 }
             }
 
