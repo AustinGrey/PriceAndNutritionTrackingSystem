@@ -113,7 +113,7 @@
                     return this.amount;
                 },
                 set(value){
-                    this.$emit("update:amount", parseFloat(value))
+                    this.$emit("update:amount", parseFloat(value) || 0)
                 }
             }
         },

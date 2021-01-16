@@ -123,14 +123,13 @@
                             id='serves'
                             class="total-servings"
                             label='Total Servings'
-                            hint="1"
                             v-model="recipe.serves"
                     />
                     <input-float
                             id="grams-per-serving"
                             class="grams-per-serving"
                             :disabled="true"
-                            :value="recipe_gramsPerServing"
+                            :value="(recipe_gramsPerServing / (recipe.serves || 1)) || 0"
                         />
                     <input-float
                             id="grams-per-serving-unit"
@@ -230,7 +229,9 @@
                                         recipe.url.split("/").slice(-2)[0],
                                         recipe.name,
                                         "",
-                                        "servings");
+                                        "servings",
+                                        "",
+                                        recipe.nutrition_data);
                                 },
                                 icon: "hamburger"
                             },
@@ -285,7 +286,9 @@
                                         ingredient.url.split("/").slice(-2)[0],
                                         ingredient.name,
                                         "",
-                                        "weight");
+                                        "weight",
+                                        "",
+                                        ingredient.nutrition_data);
                                 },
                                 icon: "carrot"
                             },
@@ -334,6 +337,9 @@
                     flag: null,
                     method: null,
                     notes: null,
+                    // Computed nutritional data from the server. Do not attempt to update this
+                    // @todo does the server really need to be the one providing all of this information?
+                    nutrition_data: null
                 },
                 focusedNode: null,
                 allowedFlags: [],
@@ -356,7 +362,9 @@
                 return this.focusedNode != null;
             },
             recipe_gramsPerServing(){
-                return this.recipe.components.reduce((total, component)=>(component.unit === "weight" ? component.amount : component.nutrition_data.grams_serve * component.amount) || 0);
+                return this.recipe.components.reduce((total, component)=>{
+                    return total + ((component.unit === "weight" ? component.amount : component.nutrition_data.grams_serve * component.amount) || 0)
+                }, 0);
             }
         },
         mounted() {
@@ -492,6 +500,7 @@
                 this.recipe.notes = recipe.notes;
                 this.recipe.tags = recipe.tags.join(',');
                 this.recipe.slug = recipe.slug;
+                this.recipe.nutrition_data = recipe.nutrition_data;
 
                 // Components are not included in results for performance reasons, make a separate call to get those
                 this.pants.get_recipe_full(recipe.url)
@@ -653,16 +662,22 @@
                     margin-left: 1em;
                 }
 
-                .grams-per-serving ::v-deep .field__input{
-                    border-top-right-radius: 0;
-                    border-bottom-right-radius: 0;
-                    border-right-color: transparent;
+                .grams-per-serving {
+                    align-self: flex-end;
+                    ::v-deep .field__input {
+                        border-top-right-radius: 0;
+                        border-bottom-right-radius: 0;
+                        border-right-color: transparent;
+                    }
                 }
-                .grams-per-serving-unit ::v-deep .field__input{
-                    border-top-left-radius: 0;
-                    border-bottom-left-radius: 0;
-                    border-left-style: dashed;
-                    border-left-color: lightgrey;
+                .grams-per-serving-unit {
+                    align-self: flex-end;
+                    ::v-deep .field__input {
+                        border-top-left-radius: 0;
+                        border-bottom-left-radius: 0;
+                        border-left-style: dashed;
+                        border-left-color: lightgrey;
+                    }
                 }
             }
 
