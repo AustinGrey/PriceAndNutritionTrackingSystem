@@ -16,7 +16,6 @@
                 v-model="content"
                 :disabled="disabled"
                 @keyup="$emit('keyup')"
-                @input="handleInput"
                 ref="input"
         />
         <!--        For the select, we publish the selected option as the data-picked_option attribute to aid in styling -->
@@ -29,8 +28,7 @@
                 v-model="content"
                 :disabled="disabled"
                 :data-picked_option="content"
-                :data-has-label="!!label"
-                @change="handleInput">
+                :data-has-label="!!label">
             <option value="" :hidden="hideDefaultOption" v-if="label">{{label}}</option>
             <slot></slot>
         </select>
@@ -45,7 +43,6 @@
                 v-model="content"
                 :disabled="disabled"
                 @keyup="$emit('keyup')"
-                @input="handleInput"
                 ref="input"
         />
 
@@ -151,24 +148,27 @@
                 },
                 // The actual input mask created by IMask
                 input_mask: undefined,
-                // The actual contents of the input
-                content: ""
             }
         },
         mounted(){
             if(this.input_mask_name){
-                this.input_mask = IMask(this.$refs.input, this.named_masks[this.input_mask_name]);
+                this.input_mask = IMask.createMask(this.named_masks[this.input_mask_name]);
             }
         },
-        watch: {
-            value: {
-                immediate: true,
-                handler: function (newVal) {
-                    if (this.input_mask) {
-                        this.input_mask.unmaskedValue = newVal ?? "";
-                    } else {
-                        this.content = newVal ?? "";
+        computed:{
+            // Handles masking the value as it gets set if necessary
+            content:{
+                get(){
+                    if(this.input_mask){
+                        let stringVal = this.value;
+                        if(stringVal !== null && stringVal !== undefined) stringVal = stringVal.toString();
+                        else stringVal = "";
+                        return this.input_mask.resolve(stringVal);
                     }
+                    return this.value;
+                },
+                set(val){
+                    this.$emit("input", this.input_mask ? this.input_mask.resolve(val) : val)
                 }
             }
         },
@@ -186,12 +186,6 @@
                     this.querySelector(`[name="${this.id}"]`).appendChild(new_option)
                 }
             },
-            /**
-             * Emits the input event with appropriate data when the value of the input field changes
-             */
-            handleInput() {
-                this.$emit('input', this.input_mask ? this.input_mask.value : this.content)
-            }
         }
     }
 </script>
