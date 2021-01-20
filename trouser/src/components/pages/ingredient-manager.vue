@@ -78,7 +78,6 @@
                     <input-float
                             id='owner'
                             label='Owner'
-                            hint="A sandwich made with melted cheese"
                             :extra='{disabled: true, value:""}'
                             v-model="ingredient.owner"
                             :disabled="true"
@@ -101,13 +100,20 @@
                     />
                 </div>
                 <div class="flex-row-equalfill">
-                    <input-float
-                            id='protein'
-                            label='protein (g)'
-                            hint="in grams"
-                            input_mask_name="nutrition_mask"
-                            v-model="ingredient.protein"
-                    />
+                    <input-unit
+                        id="protein"
+                        label="protein"
+                        v-model="ingredient.protein"
+                        :units="statics.units"
+                        primary-unit="g"
+                        />
+<!--                    <input-float-->
+<!--                            id='protein'-->
+<!--                            label='protein (g)'-->
+<!--                            hint="in grams"-->
+<!--                            input_mask_name="nutrition_mask"-->
+<!--                            v-model="ingredient.protein"-->
+<!--                    />-->
                     <input-float
                             id='carbohydrate'
                             label='carbohydrate (g)'
@@ -187,10 +193,22 @@
     import {AgGridVue} from 'ag-grid-vue';
     import "ag-grid-community/dist/styles/ag-grid.css";
     import "ag-grid-community/dist/styles/ag-theme-balham.css";
+    import InputUnit from "@/components/inputs/input-unit";
+
+    // Values that should be shared between all instance of this component
+    let _static = {
+        units: {
+            kg: 1000,
+            g: 1,
+            mg: 0.001,
+            oz: 28.34952,
+        }
+    }
 
     export default {
         name: "ingredient-manager",
         components: {
+            InputUnit,
             InputFloat,
             AgGridVue,
             SiteButton
@@ -198,6 +216,7 @@
         inject: ['pants'],
         data() {
             return {
+                statics:_static,
                 all_ingredients: {},
                 columnDefs: [
                     {headerName: "Name", field: "name", sort: 'asc', pinned: 'left'},
