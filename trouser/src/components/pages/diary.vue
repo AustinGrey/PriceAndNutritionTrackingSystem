@@ -11,12 +11,6 @@
                         class="dailyTargetNutrient"
                 >
                     <fa-icon :icon="['fas', staticVals.icons.nutrients[nutrient]]" fixedWidth />
-                    <input-float
-                            :id="nutrient"
-                            :label="`${nutrient} (${staticVals.units[nutrient]})`"
-                            v-model="oneOffFood[nutrient]"
-                            :disabled="entryType !== staticVals.entryType.ONE_OFF_FOOD"
-                    />
                     <!-- @todo extract the value-color logic here to a computed property/setting-->
                     <target-summary
                             :value="diaryFoodNutrientArray[nutrient] || [0]"
@@ -24,6 +18,12 @@
                             :target-min-value="dailyTarget.min[nutrient] || 0"
                             :target-max-value="dailyTarget.max[nutrient] || 0"
                             :value-colors="highlightedFood === null || diaryFoods === null ? null : diaryFoods.map((value, index) => {return index === highlightedFood ? 'orange' : null})"
+                    />
+                    <input-float
+                            :id="nutrient"
+                            :placeholder="`${nutrient} (${staticVals.units[nutrient]})`"
+                            v-model="oneOffFood[nutrient]"
+                            :disabled="entryType !== staticVals.entryType.ONE_OFF_FOOD"
                     />
                 </div>
             </div>
@@ -69,14 +69,12 @@
 
                 <input-float
                         id="date"
-                        label="Date"
                         type="date"
                         v-show="timeSpecificity===staticVals.timeSpecificity.ON_DATETIME"
                         v-model="entry.date"
                 />
                 <input-float
                         id="time"
-                        label="Time"
                         type="time"
                         v-show="timeSpecificity!==staticVals.timeSpecificity.JUST_NOW"
                         v-model="entry.time"
@@ -86,7 +84,6 @@
 
                 <input-float
                         id="amount"
-                        label="Amount"
                         v-model="entry.amount"
                         :extra="{style:'text-align:right;max-width:6em'}"
                 />
@@ -604,7 +601,7 @@
 
         .nutrientTargets {
             display: grid;
-            grid-template-columns: max-content 9em 1fr;
+            grid-template-columns: max-content 1fr 9em;
             grid-gap: 0.5em;
             align-items: center;
 
