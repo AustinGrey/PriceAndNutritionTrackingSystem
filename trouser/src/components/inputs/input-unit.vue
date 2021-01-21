@@ -85,7 +85,7 @@ You can still pass null to indicate no value
                     return this.value !== null ? this.convertUnits(this.value, this.primaryUnit, this.displayUnit) : null;
                 },
                 set(value) {
-                    this.$emit('input', this.convertUnits(parseFloat(value) || null, this.displayUnit, this.primaryUnit));
+                    this.$emit('input', value !== '' ? this.convertUnits(parseFloat(value), this.displayUnit, this.primaryUnit) : null);
                 }
             },
             /**
