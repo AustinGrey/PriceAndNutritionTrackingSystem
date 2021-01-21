@@ -380,7 +380,7 @@
 
                 // Nutritional Data
                 this.ingredient.kilojoules = ingredient.kilojoules;
-                this.ingredient.protein = ingredient.protein;
+                this.ingredient.protein = parseFloat(ingredient.protein) || null;
                 this.ingredient.fibre = ingredient.fibre;
                 this.ingredient.carbohydrate = ingredient.carbohydrate;
                 this.ingredient.fat = ingredient.fat;

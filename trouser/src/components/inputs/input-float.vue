@@ -94,7 +94,6 @@
             // TODO make it so that you can specify your own mask?
             input_mask_name: String,
 
-            // @todo hint support
             // hint is a paragraph explaining what could be put in, or limitations to inputs. Possibly should be made visible on focus
             hint: {
                 type: String,
@@ -103,26 +102,6 @@
 
             // Determines what value the input should currently hold
             value: [String, Number],
-            /* @todo value getter setter
-
-            get value(){
-                return this.querySelector(`[name="${this.id}"]`).value;
-            }
-            set value(value){
-                this.querySelector(`[name="${this.id}"]`).value = value;
-                // If this has an input mask, the mask's internal value will need to be synchronized.
-                if(this.input_mask){
-                    this.input_mask.updateValue();
-                }
-
-                if(this.type === "select"){
-                    // Need to trigger a change so that the data-picked_option updates
-                    let evt = document.createEvent("HTMLEvents");
-                    evt.initEvent("change", false, true);
-                    this.querySelector(`[name="${this.id}"]`).dispatchEvent(evt);
-                }
-            }
-             */
 
             /* Determines if the default option for select inputs should be hidden so that it cannot be picked manually*/
             hideDefaultOption: {
@@ -224,6 +203,7 @@
             padding: calc(var(--label-spacing) / 2) .5em calc(var(--label-spacing) / 2);
             transition: all .1s ease-out;
             width: 100%;
+            height: 100%; // The height of the input is determined by the div it resides in. Fixes webkit bug where flexed inputs dont stretch until a reflow
             resize: vertical;
             font-family: var(--font-family-content);
             border-radius: var(--border-radius);
@@ -242,7 +222,6 @@
             }
         }
 
-        /* For some reason select elements are 2 px wider than inputs, normalize by going 50/50 */
         > select.field__input {
             padding: calc(var(--label-spacing) / 2 - 1px) .5em calc(var(--label-spacing) / 2 - 1px);
 

@@ -3,9 +3,11 @@ Creates an input with an adjustable unit as one single control. If conversion da
 adjusting the unit will also automatically convert the input amount
 
 While other inputs are more general, this one is limited to being a number to help in conversion.
+You can still pass null to indicate no value
 -->
 <template>
     <div :class="$options.name">
+        <label class="label" :for="id" v-if="label">{{label}}</label>
         <div>
             <input-float
                     class="amount"
@@ -60,15 +62,17 @@ While other inputs are more general, this one is limited to being a number to he
             // The current value of this input. In primary units
             value: {
                 type: Number,
+                default: null
             }
         },
         data() {
             return {
-
                 /**
                  * The currently displayed unit. Affects the display value
                  */
-                displayUnit: this.primaryUnit
+                displayUnit: this.primaryUnit,
+                // A toggle for the will change property. Forces a repaint when mounted to clear some render bugs on webkit browsers
+                willChangeToggle: true
             }
         },
         computed: {
@@ -78,10 +82,10 @@ While other inputs are more general, this one is limited to being a number to he
                  * @returns {Number}
                  */
                 get() {
-                    return this.convertUnits(this.value, this.primaryUnit, this.displayUnit);
+                    return this.value !== null ? this.convertUnits(this.value, this.primaryUnit, this.displayUnit) : null;
                 },
                 set(value) {
-                    this.$emit('input', this.convertUnits(parseFloat(value) || 0, this.displayUnit, this.primaryUnit));
+                    this.$emit('input', this.convertUnits(parseFloat(value) || null, this.displayUnit, this.primaryUnit));
                 }
             },
             /**
@@ -117,9 +121,28 @@ While other inputs are more general, this one is limited to being a number to he
 
 <style scoped lang="scss">
     .input-unit {
+        // Same as for float-input
+        > .label {
+            color: c(float-input, label);
+            display: block;
+            box-sizing: border-box;
+            font-size: .8em;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            padding: .5em 0.6rem;
+            pointer-events: none;
+            top: 0;
+            text-align: left;
+            transform: none;
+            transition: all .2s ease-out;
+            user-select: none;
+            width: 100%;
+            z-index: 1;
+        }
         >div{
             display: flex;
-            align-items: baseline;
+            align-items: stretch;
 
             .amount {
                 flex: 1;
@@ -136,6 +159,7 @@ While other inputs are more general, this one is limited to being a number to he
                 ::v-deep .field__input {
                     padding-left: 0;
                     appearance: none;
+                    line-height: 1.2em; // Fix bottom of text getting cut off
 
                     border-top-left-radius: 0;
                     border-bottom-left-radius: 0;
