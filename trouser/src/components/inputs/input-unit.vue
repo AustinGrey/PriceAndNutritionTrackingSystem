@@ -113,7 +113,7 @@ You can still pass null to indicate no value
                     this.internalValue = this.convertUnitsString(value, this.displayUnit, this.primaryUnit, null);
                     // However we may still have a chance to update the real value, if there are no trailing zeroes
                     // If we did emit this and there were trailing zeros, the component would re-render and we would lose them
-                    if(this.trailingZeros === null) this.$emit('input', parseFloat(value));
+                    if(this.trailingZeros === null) this.$emit('input', parseFloat(value) || null);
                 }
             },
             /**
@@ -173,7 +173,7 @@ You can still pass null to indicate no value
             },
             onChange() {
                 // Update the value prop on change
-                this.$emit('input', parseFloat(this.internalValue));
+                this.$emit('input', parseFloat(this.internalValue) || null);
             }
         }
     }
