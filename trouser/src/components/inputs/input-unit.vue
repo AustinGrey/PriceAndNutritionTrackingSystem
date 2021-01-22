@@ -13,6 +13,8 @@ You can still pass null to indicate no value
                     class="amount"
                     :id="id"
                     v-model="displayValue"
+                    input_mask_name="nutrition_mask"
+                    @change="onChange"
             />
             <input-float
                     class="unit"
@@ -71,21 +73,47 @@ You can still pass null to indicate no value
                  * The currently displayed unit. Affects the display value
                  */
                 displayUnit: this.primaryUnit,
-                // A toggle for the will change property. Forces a repaint when mounted to clear some render bugs on webkit browsers
-                willChangeToggle: true
+                // Stores an intermediary string representation of the value, as we only emit an updated value
+                // on change, but can update this value immediately. This value is stored in primary units, and does
+                // not contain invalid trailing zeros
+                // String
+                internalValue: this.value,
+                // If not null, the number of zeros to show in the input field. If 0, there will be a trailing decimal e.g. "1."
+                trailingZeros: null
             }
         },
         computed: {
             displayValue: {
                 /**
-                 * The currently displayed value, based on the display unit
-                 * @returns {Number}
+                 * The currently displayed value, based on the display unit. It can be a string so that trailing numbers can be input
+                 * e.g. "1." and "1.0" are both invalid numbers, but necessary so that you can type "1.01"
+                 * @returns {String}
                  */
                 get() {
-                    return this.value !== null ? this.convertUnits(this.value, this.primaryUnit, this.displayUnit) : null;
+                    return this.convertUnitsString(this.internalValue, this.primaryUnit, this.displayUnit, this.trailingZeros);
                 },
                 set(value) {
-                    this.$emit('input', value !== '' ? this.convertUnits(parseFloat(value), this.displayUnit, this.primaryUnit) : null);
+                    // Update the number of trailing zeros we expect to display in the output
+                    // They will be used when we convert the updated value back to be displayed
+                    // Use regex to get the length of all trailing zeros
+                    let match = value.match(/\.([0-9]*[1-9]+)*(?<trailingZeros>0+)$/);
+                    if(match === null){
+                        this.trailingZeros = 0; // May still have a trailing '.'
+                    } else {
+                        this.trailingZeros = match.groups.trailingZeros.length;
+                    }
+                    // If no trailing zeros, determine if we need a trailing decimal, or nothing at all
+                    if(
+                        (this.trailingZeros === 0 && value.indexOf(".") !== value.length - 1)
+                        || value.length === 0
+                    ) this.trailingZeros = null;
+
+                    // The internal value does not contain trailing zeros, as it is supposed to be a string representation of a valid number
+                    // So we always pass null
+                    this.internalValue = this.convertUnitsString(value, this.displayUnit, this.primaryUnit, null);
+                    // However we may still have a chance to update the real value, if there are no trailing zeroes
+                    // If we did emit this and there were trailing zeros, the component would re-render and we would lose them
+                    if(this.trailingZeros === null) this.$emit('input', parseFloat(value));
                 }
             },
             /**
@@ -101,6 +129,12 @@ You can still pass null to indicate no value
                 return this.units;
             }
         },
+        watch: {
+            // If the display unit changes, we want to wipe out the trailing zeros
+            displayUnit(){
+                this.trailingZeros = null;
+            }
+        },
         methods: {
             /**
              * Converts the given value that is in inUnits, to a value that is in outUnits
@@ -114,6 +148,32 @@ You can still pass null to indicate no value
                 var inRatio = this.normalizedUnits[inUnit];
                 var outRatio = this.normalizedUnits[outUnit];
                 return (value * inRatio) / outRatio
+            },
+            /**
+             * Converts the given value that is in inUnits, to a value that is in outUnits.
+             * Allows trailing decimals and 0's so that "1." and "1.0" could both be returned
+             * @param {string} value The value given in inUnits
+             * @param {string} inUnit The unit the value starts out in, must exist in the normalizedUnits dictionary
+             * @param {string} outUnit The unit the return value is in, must exist in the normalizedUnits dictionary
+             * @param {int} trailingZeros if not null, a decimal and this number of 0's will be appended. If 0, a trailing decimal will exist
+             * @returns {string}
+             */
+            convertUnitsString(value, inUnit, outUnit, trailingZeros) {
+                // Get the ratio of the current unit
+                var inRatio = this.normalizedUnits[inUnit];
+                var outRatio = this.normalizedUnits[outUnit];
+                var val = ((parseFloat(value) * inRatio) / outRatio).toString();
+
+                if (trailingZeros === 0){
+                    val += ".";
+                } else if (trailingZeros > 0){
+                    val += "." + "0".repeat(trailingZeros);
+                }
+                return val;
+            },
+            onChange() {
+                // Update the value prop on change
+                this.$emit('input', parseFloat(this.internalValue));
             }
         }
     }

@@ -43,6 +43,7 @@
                 v-model="content"
                 :disabled="disabled"
                 @keyup="$emit('keyup')"
+                @change="onChange"
                 ref="input"
         />
 
@@ -165,6 +166,10 @@
                     this.querySelector(`[name="${this.id}"]`).appendChild(new_option)
                 }
             },
+            // Simply pass along the event for others to deal with
+            onChange(event){
+                this.$emit('change', event);
+            }
         }
     }
 </script>
