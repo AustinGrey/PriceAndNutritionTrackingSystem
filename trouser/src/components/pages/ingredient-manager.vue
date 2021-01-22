@@ -105,7 +105,6 @@
                         label="protein"
                         v-model="ingredient.protein"
                         :units="statics.units"
-                        primary-unit="g"
                         />
 <!--                    <input-float-->
 <!--                            id='protein'-->

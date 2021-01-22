@@ -46,10 +46,9 @@ You can still pass null to indicate no value
             },
             // Which unit of the units dictionary is the primary one. Any conversion data should specify how to convert
             // to this unit. (e.g. 'g'). No matter what unit is currently chosen by the user or displayed, the reported
-            // value of this component will be in this unit.
+            // value of this component will be in this unit. If not passed in, it will be automatically determined: see computedPrimaryUnit
             primaryUnit: {
                 type: String,
-                required: true
             },
             // Describe what units are available for this value.
             // If a string, then the unit will be set directly, and the user will have no control
@@ -72,7 +71,7 @@ You can still pass null to indicate no value
                 /**
                  * The currently displayed unit. Affects the display value
                  */
-                displayUnit: this.primaryUnit,
+                displayUnit: null,
                 // Stores an intermediary string representation of the value, as we only emit an updated value
                 // on change, but can update this value immediately. This value is stored in primary units, and does
                 // not contain invalid trailing zeros
@@ -90,7 +89,7 @@ You can still pass null to indicate no value
                  * @returns {String}
                  */
                 get() {
-                    return this.convertUnitsString(this.internalValue, this.primaryUnit, this.displayUnit, this.trailingZeros);
+                    return this.convertUnitsString(this.internalValue, this.computedPrimaryUnit, this.displayUnit, this.trailingZeros);
                 },
                 set(value) {
                     // Update the number of trailing zeros we expect to display in the output
@@ -110,7 +109,7 @@ You can still pass null to indicate no value
 
                     // The internal value does not contain trailing zeros, as it is supposed to be a string representation of a valid number
                     // So we always pass null
-                    this.internalValue = this.convertUnitsString(value, this.displayUnit, this.primaryUnit, null);
+                    this.internalValue = this.convertUnitsString(value, this.displayUnit, this.computedPrimaryUnit, null);
                     // However we may still have a chance to update the real value, if there are no trailing zeroes
                     // If we did emit this and there were trailing zeros, the component would re-render and we would lose them
                     if(this.trailingZeros === null) this.$emit('input', parseFloat(value) || null);
@@ -127,7 +126,23 @@ You can still pass null to indicate no value
                     return output
                 }, {});
                 return this.units;
+            },
+            /**
+             * A safe access property. If the primary unit is undefined, this will return the first unit that has a value
+             * of '1' in the dictionary. If no such unit is found, it will throw an error
+             */
+            computedPrimaryUnit(){
+                if(typeof this.primaryUnit === "string") return this.primaryUnit;
+
+                for(const [unit, ratio] of Object.entries(this.normalizedUnits)){
+                    if(ratio === 1) return unit;
+                }
+
+                throw new Error("Unable to determine primary unit. If using object syntax for units, ensure one of the keys has a value of 1")
             }
+        },
+        created(){
+            this.displayUnit = this.computedPrimaryUnit;
         },
         watch: {
             // If the display unit changes, we want to wipe out the trailing zeros
