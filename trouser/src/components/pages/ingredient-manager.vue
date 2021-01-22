@@ -85,78 +85,66 @@
                 </div>
                 <h3>Nutrition</h3>
                 <div class="flex-row-equalfill">
-                    <input-float
-                            id='serving'
-                            label='Serving Size (g)'
-                            hint="in grams"
-                            input_mask_name="nutrition_mask"
-                            v-model="ingredient.serving"
-                    />
-                    <input-float
-                            id='kilojoules'
-                            label='kilojoules'
-                            input_mask_name=nutrition_mask
-                            v-model="ingredient.kilojoules"
-                    />
+                    <input-unit
+                        id='serving'
+                        label='Serving Size'
+                        v-model='ingredient.serving'
+                        :units='statics.units.weight'
+                        />
+                    <input-unit
+                        id='energy'
+                        label='energy'
+                        v-model='ingredient.kilojoules'
+                        :units='statics.units.energy'
+                        />
                 </div>
                 <div class="flex-row-equalfill">
                     <input-unit
                         id="protein"
                         label="protein"
                         v-model="ingredient.protein"
-                        :units="statics.units"
+                        :units="statics.units.weight"
                         />
-<!--                    <input-float-->
-<!--                            id='protein'-->
-<!--                            label='protein (g)'-->
-<!--                            hint="in grams"-->
-<!--                            input_mask_name="nutrition_mask"-->
-<!--                            v-model="ingredient.protein"-->
-<!--                    />-->
-                    <input-float
-                            id='carbohydrate'
-                            label='carbohydrate (g)'
-                            hint="in grams"
-                            input_mask_name="nutrition_mask"
-                            v-model="ingredient.carbohydrate"
-                    />
-                    <input-float
-                            id='fat'
-                            label='fat (g)'
-                            hint="in grams"
-                            input_mask_name="nutrition_mask"
-                            v-model="ingredient.fat"
-                    />
-                    <input-float
-                            id='saturatedfat'
-                            label='saturatedfat (g)'
-                            hint="in grams"
-                            input_mask_name="nutrition_mask"
-                            v-model="ingredient.saturatedfat"
-                    />
+                    <input-unit
+                        id='carbohydrate'
+                        label='carbohydrate'
+                        v-model='ingredient.carbohydrate'
+                        :units='statics.units.weight'
+                        />
+                    <input-unit
+                        id='fat'
+                        label='fat'
+                        v-model='ingredient.fat'
+                        :units='statics.units.weight'
+                        />
+                    <input-unit
+                        id='saturatedfat'
+                        label='saturated fat'
+                        v-model='ingredient.saturatedfat'
+                        :units='statics.units.weight'
+                        />
                 </div>
                 <div class="flex-row-equalfill">
-                    <input-float
-                            id='sugar'
-                            label='sugar (g)'
-                            hint="in grams"
-                            input_mask_name="nutrition_mask"
-                            v-model="ingredient.sugar"
-                    />
-                    <input-float
-                            id='sodium'
-                            label='sodium (mg)'
-                            hint="in milligrams"
-                            input_mask_name="nutrition_mask"
-                            v-model="ingredient.sodium"
-                    />
-                    <input-float
-                            id='fibre'
-                            label='fibre (g)'
-                            hint="in grams"
-                            input_mask_name="nutrition_mask"
-                            v-model="ingredient.fibre"
-                    />
+                    <input-unit
+                        id='sugar'
+                        label='sugar'
+                        v-model='ingredient.sugar'
+                        :units='statics.units.weight'
+                        />
+<!--                    @todo the primary unit should be grams, having the server store everything in grams simplifies a lot-->
+                    <input-unit
+                        id='sodium'
+                        label='sodium'
+                        v-model='ingredient.sodium'
+                        :units='statics.units.weight'
+                        primary-unit="mg"
+                        />
+                    <input-unit
+                        id='fibre'
+                        label='fibre'
+                        v-model='ingredient.fibre'
+                        :units='statics.units.weight'
+                        />
                 </div>
             </form>
             <div class="flex-row-equalfill">
@@ -197,11 +185,17 @@
     // Values that should be shared between all instance of this component
     let _static = {
         units: {
-            kg: 1000,
-            g: 1,
-            mg: 0.001,
-            oz: 28.34952,
-        }
+            weight: {
+                kg: 1000,
+                g: 1,
+                mg: 0.001,
+                oz: 28.34952,
+            },
+            energy:{
+                kj: 1,
+                kcal: 0.2390057
+            }
+        },
     }
 
     export default {
@@ -371,21 +365,21 @@
                 this.ingredient.name = ingredient.name;
                 this.ingredient.description = ingredient.description;
                 this.ingredient.owner = ingredient.owner;
-                this.ingredient.serving = ingredient.serving;
                 this.ingredient.introduction = ingredient.introduction;
                 this.ingredient.notes = ingredient.notes;
                 this.ingredient.tags = ingredient.tags.join(',');
                 this.ingredient.slug = ingredient.slug;
 
                 // Nutritional Data
-                this.ingredient.kilojoules = ingredient.kilojoules;
+                this.ingredient.serving = parseFloat(ingredient.serving) || null;
+                this.ingredient.kilojoules = parseFloat(ingredient.kilojoules) || null;
                 this.ingredient.protein = parseFloat(ingredient.protein) || null;
-                this.ingredient.fibre = ingredient.fibre;
-                this.ingredient.carbohydrate = ingredient.carbohydrate;
-                this.ingredient.fat = ingredient.fat;
-                this.ingredient.sugar = ingredient.sugar;
-                this.ingredient.saturatedfat = ingredient.saturatedfat;
-                this.ingredient.sodium = ingredient.sodium;
+                this.ingredient.fibre = parseFloat(ingredient.fibre) || null;
+                this.ingredient.carbohydrate = parseFloat(ingredient.carbohydrate) || null;
+                this.ingredient.fat = parseFloat(ingredient.fat) || null;
+                this.ingredient.sugar = parseFloat(ingredient.sugar) || null;
+                this.ingredient.saturatedfat = parseFloat(ingredient.saturatedfat) || null;
+                this.ingredient.sodium = parseFloat(ingredient.sodium) || null;
 
                 // Also store a reference to this node so that we can refresh it
                 this.focusedNode = args.node;
