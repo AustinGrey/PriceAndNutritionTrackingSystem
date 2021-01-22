@@ -148,6 +148,11 @@ You can still pass null to indicate no value
             // If the display unit changes, we want to wipe out the trailing zeros
             displayUnit(){
                 this.trailingZeros = null;
+            },
+            // If the value prop changes, we have to sync the internal value
+            // @todo use a computed property instead?
+            value(val){
+                this.internalValue = val;
             }
         },
         methods: {
