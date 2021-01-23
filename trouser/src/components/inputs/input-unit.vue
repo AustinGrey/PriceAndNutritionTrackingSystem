@@ -110,9 +110,11 @@ You can still pass null to indicate no value
                     // The internal value does not contain trailing zeros, as it is supposed to be a string representation of a valid number
                     // So we always pass null
                     this.internalValue = this.convertUnitsString(value, this.displayUnit, this.computedPrimaryUnit, null);
+
+                    // @todo this is commented out because it still causes bugs when entering values not in the primary unit
                     // However we may still have a chance to update the real value, if there are no trailing zeroes
                     // If we did emit this and there were trailing zeros, the component would re-render and we would lose them
-                    if(this.trailingZeros === null) this.$emit('input', parseFloat(value) || null);
+                    //if(this.trailingZeros === null) this.$emit('input', parseFloat(value) || null);
                 }
             },
             /**
@@ -200,6 +202,8 @@ You can still pass null to indicate no value
 </script>
 
 <style scoped lang="scss">
+    @import 'src/assets/css/colors';
+
     .input-unit {
         // Same as for float-input
         > .label {
@@ -237,9 +241,10 @@ You can still pass null to indicate no value
 
             .unit {
                 ::v-deep .field__input {
-                    padding-left: 0;
+                    padding: 0 0.25em;
                     appearance: none;
                     line-height: 1.2em; // Fix bottom of text getting cut off
+                    background: c(float-unit-unit, background);
 
                     border-top-left-radius: 0;
                     border-bottom-left-radius: 0;

@@ -85,12 +85,16 @@ $colors: (
   ),
 
   float-input:(
-    label: $gunmetal,
-    border: $gunmetal,
+    label: scale_color($gunmetal, $lightness:-25%),
+    border: scale_color($gunmetal, $lightness:75%),
   ),
 
   float-input-hover: (
     border: $blueCrayola
+  ),
+
+  float-unit-unit:(
+    background: scale_color($blueJeans, $lightness:90%)
   )
 );
 

@@ -106,6 +106,13 @@
                         id="recipe-components"
                         v-if="recipe.components.length"
                 >
+                    <!--
+                    The server allows storing components in units of grams or servings
+                    Since we allow users to easily convert between units of g, srv, etc, we are instead
+                    only supporting grams, and the user can display that as whatever unit they wish
+                    In the future we might support a 'preferred unit' to keep track of if the user
+                    prefers servings to display initially instead of grams, but I can't think of a compelling use case
+                    -->
                     <recipe-component
                             v-for="(component, idx) in recipe.components" :key="component.id"
                             :id="component.id"
@@ -113,9 +120,8 @@
                             :recipe_or_ingredient_id="component.recipe_or_ingredient_id"
                             :type="component.type"
                             :note.sync="component.note"
-                            :unit.sync="component.unit"
                             :amount.sync="component.amount"
-                            :include-labels="false"
+                            :serving-size="component.nutrition_data.grams_serve"
                             :class="{first: idx === 0, last: idx === recipe.components.length - 1}"
                             @delete="recipe.components.splice(idx, 1)"
                     />
@@ -229,7 +235,7 @@
                                         recipe.url.split("/").slice(-2)[0],
                                         recipe.name,
                                         "",
-                                        "servings",
+                                        "weight", // We do not support servings units internally, only as a display unit
                                         "",
                                         recipe.nutrition_data);
                                 },
@@ -509,14 +515,15 @@
                         // Empty current components
                         this.remove_all_components();
 
+                        // We don't support serving units internally, so we convert any component in serving units to units of grams
                         json.components.forEach(component => {
                             this.add_component(
                                 component.of_ingredient == null ? "recipe" : "ingredient",
                                 component.id,
                                 component.of_ingredient || component.of_recipe,
                                 component.name,
-                                component.servings || component.weight,
-                                component.servings == null ? "weight" : "servings",
+                                component.servings != null ? component.servings * component.nutrition_data.grams_serve : component.weight,
+                                "weight",
                                 component.note,
                                 component.nutrition_data
                             );
@@ -610,7 +617,7 @@
             #recipe-components {
                 font-size: 12px;
                 display: grid;
-                grid-template-columns: [note-start] 1em [name-start] 1fr [note-end] 5em 6em;
+                grid-template-columns: [note-start] 1em [name-start] 1fr [note-end] 6em 4em;
                 margin: var(--padding) 0 var(--padding) var(--padding);
                 align-items: center;
 
@@ -624,6 +631,7 @@
                     .note {
                         grid-column: note-start / note-end
                     }
+
                     .amount,
                     .unit{
                         // Make them fill the height if the ingredient name were to wrap due to length
