@@ -35,6 +35,7 @@
                         hint="Introductory paragraph explains ingredient"
                         :multiline="true"
                         v-model="ingredient.introduction"
+                        v-show="showAllFields"
                 />
                 <div class="flex-row-equalfill">
                     <input-float
@@ -49,6 +50,7 @@
                             hint="grilled-cheese"
                             input_mask_name="slug_mask"
                             v-model="ingredient.slug"
+                            v-show="showAllFields"
                     />
                 </div>
 
@@ -65,6 +67,7 @@
                         hint="Additional information about usage, types, etc."
                         :multiline="true"
                         v-model="ingredient.notes"
+                        v-show="showAllFields"
                 />
                 <div class="flex-row-equalfill">
                     <input-float
@@ -73,14 +76,15 @@
                             hint="tag1,tag2,tag3"
                             input_mask_name="tag_mask"
                             v-model="ingredient.tags"
+                            v-show="showAllFields"
                     />
                     <!-- You can't modify the owner, but I'm showing it here for this proof of concept -->
                     <input-float
                             id='owner'
                             label='Owner'
-                            :extra='{disabled: true, value:""}'
                             v-model="ingredient.owner"
                             :disabled="true"
+                            v-show="showAllFields"
                     />
                 </div>
                 <h3>Nutrition</h3>
@@ -147,7 +151,20 @@
                         />
                 </div>
             </form>
-            <div class="flex-row-equalfill">
+            <div class="form-actions">
+                <input-checkbox
+                        id="showMore"
+                        v-model="showAllFields"
+                        label="Advanced"
+                />
+                <site-button
+                        :disabled="!canDelete"
+                        v-show="canDelete && showAllFields"
+                        @click.native="deleteIngredient"
+                        id="delete_desc"
+                >
+                    Delete
+                </site-button>
                 <site-button
                         :primary="!canEdit"
                         @click.native="createIngredient"
@@ -157,18 +174,13 @@
                 <site-button
                         :primary="canEdit"
                         :disabled="!canEdit"
+                        v-show="canEdit"
                         @click.native="editIngredient"
                         id="edit_desc"
                 >
                     Save
                 </site-button>
-                <site-button
-                        :disabled="!canDelete"
-                        @click.native="deleteIngredient"
-                        id="delete_desc"
-                >
-                    Delete
-                </site-button>
+
             </div>
         </div>
     </div>
@@ -181,6 +193,7 @@
     import "ag-grid-community/dist/styles/ag-grid.css";
     import "ag-grid-community/dist/styles/ag-theme-balham.css";
     import InputUnit from "@/components/inputs/input-unit";
+    import InputCheckbox from "@/components/inputs/input-checkbox";
 
     // Values that should be shared between all instance of this component
     let _static = {
@@ -201,6 +214,7 @@
     export default {
         name: "ingredient-manager",
         components: {
+            InputCheckbox,
             InputUnit,
             InputFloat,
             AgGridVue,
@@ -210,6 +224,8 @@
         data() {
             return {
                 statics:_static,
+                // If all fields in the entry form should show
+                showAllFields: false,
                 all_ingredients: {},
                 columnDefs: [
                     {headerName: "Name", field: "name", sort: 'asc', pinned: 'left'},
@@ -429,6 +445,11 @@
 
             button, .field {
                 margin: 1px;
+            }
+
+            .form-actions{
+                display: flex;
+                justify-content: flex-end;
             }
         }
 
