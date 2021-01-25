@@ -447,15 +447,15 @@
             edit_recipe() {
                 this.pants.edit_recipe(this.recipe.uri, {
                     name: this.recipe.name,
-                    slug: this.recipe.slug,
-                    description: this.recipe.description,
+                    slug: this.recipe.slug || "",
+                    description: this.recipe.description || "",
                     // @todo Cannot edit owner? Remove this if there is no case where this is possible
                     // 'owner': form.querySelector('[name=owner]').value,
-                    tags: this.recipe.tags.split(',').filter(tag => tag !== ''), // Remove empty tags
-                    serves: this.recipe.serves,
-                    introduction: this.recipe.introduction,
-                    notes: this.recipe.notes,
-                    method: this.recipe.method,
+                    tags: (this.recipe.tags || "").split(',').filter(tag => tag !== ''), // Remove empty tags
+                    serves: this.recipe.serves || 1,
+                    introduction: this.recipe.introduction || "",
+                    notes: this.recipe.notes || "",
+                    method: this.recipe.method || "",
                     components: this.get_components(),
                     flag: this.recipe.flag,
                 })
