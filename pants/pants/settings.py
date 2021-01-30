@@ -191,20 +191,23 @@ STANDARD_WEIGHT = 1000 # All values stored in KG = 1000g
 # FIXME KLUDGE - we should be able to do without these, nutrition data
 # should be managed by a class
 # XXX important
+
+# Without grams and cost
+NUTRITION_DATA_ITEMS_BASIC = ('protein','fibre','kilojoules','carbohydrate','fat','sugar','saturatedfat','sodium')
+
+
 # These are the minimum dict keys in nutrition data returned from
 # recipe and ingredient cached property nutrition_data
 # This allows us to treat them interchangeably in many places and
 # cache the relevant data for recipe components etc.
-NUTRITION_DATA_ITEMS = ('protein','fibre','kilojoules','carbohydrate','fat','sugar','grams','cost')
+NUTRITION_DATA_ITEMS = NUTRITION_DATA_ITEMS_BASIC + ('grams','cost')
 # Note cost and grams on the end, used for per-X calculations
 # Ingredient grams is constant for all ingredients - see STANDARD_WEIGHT
 
-# Without grams and cost
-NUTRITION_DATA_ITEMS_BASIC = ('protein','fibre','kilojoules','carbohydrate','fat','sugar')
 
 # With all items and ratios calculated - this is the most data that
 # will be returned apart from sub-object data (amino acids, vitamins etc)
-NUTRITION_DATA_ITEMS_EXTENDED = ('protein','fibre','kilojoules','carbohydrate','fat','sugar','grams','cost','protein_per_cost','fibre_per_cost','protein_per_j','fibre_per_j','pf_per_j','rank')
+NUTRITION_DATA_ITEMS_EXTENDED = NUTRITION_DATA_ITEMS + ('protein_per_cost','fibre_per_cost','protein_per_j','fibre_per_j','pf_per_j','rank')
 
 # Decimal Quantization settings - this controls the significant
 # figures shown to users and used in some calculations
